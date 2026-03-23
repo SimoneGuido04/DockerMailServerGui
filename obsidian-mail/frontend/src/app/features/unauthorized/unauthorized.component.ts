@@ -1,8 +1,11 @@
 import { Component, inject } from '@angular/core';
+import { JsonPipe } from '@angular/common';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-unauthorized',
+  standalone: true,
+  imports: [JsonPipe],
   template: `
     <div class="min-h-screen bg-background flex items-center justify-center px-6">
       <div class="glass-card rounded-xl p-10 max-w-md w-full text-center space-y-6">
