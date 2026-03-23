@@ -10,10 +10,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  const token = oauthService.getIdToken() || oauthService.getAccessToken();
-  if (token) {
+  const idToken = oauthService.getIdToken();
+  const accToken = oauthService.getAccessToken();
+  
+  if (idToken) {
     const authReq = req.clone({
-      setHeaders: { Authorization: `Bearer ${token}` }
+      setHeaders: { 
+        Authorization: `Bearer ${idToken}`,
+        'X-Zitadel-Access-Token': accToken
+      }
     });
     return next(authReq);
   }

@@ -1,9 +1,18 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DockerService } from '../docker/docker.service';
 
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
 export class CreateMailboxDto {
+  @IsEmail()
   email: string;
+
+  @IsString()
+  @IsNotEmpty()
   password: string;
+
+  @IsOptional()
+  @IsString()
   quota?: string;
 }
 
@@ -91,16 +100,28 @@ export class MailboxesService {
       .split('\n')
       .filter(l => l.includes('@'))
       .map(line => {
+        // Find the actual email token (matches anything with an @ symbol)
         const parts = line.trim().split(/\s+/);
-        const email = parts[0];
+        const email = parts.find(p => p.includes('@')) || '';
         const [, domain] = email.split('@');
+        
+        // Quota is usually the token after "( " in the new format or just parts[1]
+        let quota: string | null = null;
+        if (line.includes('(') && line.includes('/')) {
+           const match = line.match(/\(\s*([^\s]+)\s*\//);
+           if (match) quota = match[1];
+        } else if (parts.length > 1 && !parts.includes('*')) {
+           quota = parts[1];
+        }
+
         return {
           email,
-          domain,
-          quota: parts[1] ?? null,
+          domain: domain || '',
+          quota,
           isAdmin: false,
         };
-      });
+      })
+      .filter(mb => mb.email);
   }
 
   private parseAliasList(stdout: string) {
@@ -108,11 +129,14 @@ export class MailboxesService {
       .split('\n')
       .filter(l => l.includes('->') || l.includes('|'))
       .map(line => {
-        const [alias, destination] = line.includes('->') ? line.split('->') : line.split('|');
+        const [aliasPart, destination] = line.includes('->') ? line.split('->') : line.split('|');
+        // Remove leading '* ' and trim
+        const alias = aliasPart.replace(/^\*\s*/, '').trim();
         return {
-          alias: alias.trim(),
+          alias,
           destination: destination.trim(),
         };
-      });
+      })
+      .filter(a => a.alias);
   }
 }

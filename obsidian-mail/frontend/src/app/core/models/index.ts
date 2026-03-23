@@ -1,5 +1,12 @@
 // ── Server / Dashboard ──────────────────────────────────────────────────────
 
+export interface ServiceStatus {
+  name: string;
+  subtitle: string;
+  icon: string;
+  status: 'running' | 'stopped' | 'active' | 'inactive';
+}
+
 export interface ServerStats {
   status: 'running' | 'stopped' | 'error';
   uptime: string;
@@ -8,6 +15,7 @@ export interface ServerStats {
   totalMailboxes: number;
   totalDomains: number;
   lastActivity: string;
+  services: ServiceStatus[];
 }
 
 export interface QueueMessage {

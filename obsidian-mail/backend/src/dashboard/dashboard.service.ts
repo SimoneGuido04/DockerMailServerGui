@@ -32,11 +32,32 @@ export class DashboardService {
     // Get domains
     const domainResult = await this.docker.runSetup(['email', 'list']);
     const domains = new Set(
-      mailboxLines.map(l => l.trim().split('@')[1]).filter(Boolean)
+      mailboxLines.map(l => {
+        const parts = l.trim().split(/\s+/);
+        const email = parts.find(p => p.includes('@')) || '';
+        return email.split('@')[1];
+      }).filter(Boolean)
     );
 
     const started = info.State?.StartedAt ? new Date(info.State.StartedAt) : null;
     const uptime = started ? this.formatUptime(Date.now() - started.getTime()) : '—';
+
+    const envVars: Record<string, string> = {};
+    if (info?.Config?.Env) {
+      for (const e of info.Config.Env) {
+        const [key, ...rest] = e.split('=');
+        envVars[key] = rest.join('=');
+      }
+    }
+
+    const isRunning = info?.State?.Running;
+    const services = [
+      { name: 'Postfix',  subtitle: 'MTA Engine',      icon: 'send',       status: isRunning ? 'running' : 'stopped' },
+      { name: 'Dovecot',  subtitle: 'IMAP/POP3',       icon: 'inbox',      status: isRunning ? 'running' : 'stopped' },
+      { name: 'Rspamd',   subtitle: 'Spam Filter',      icon: 'security',   status: isRunning && envVars['ENABLE_RSPAMD'] === '1' ? 'running' : 'inactive' },
+      { name: 'ClamAV',   subtitle: 'Antivirus',        icon: 'coronavirus',status: isRunning && envVars['ENABLE_CLAMAV'] === '1' ? 'running' : 'inactive' },
+      { name: 'Fail2ban', subtitle: 'IP Ban Manager',   icon: 'block',      status: isRunning && envVars['ENABLE_FAIL2BAN'] === '1' ? 'active' : 'inactive' },
+    ];
 
     return {
       status: info.State?.Running ? 'running' : 'stopped',
@@ -46,6 +67,7 @@ export class DashboardService {
       totalMailboxes: mailboxLines.length,
       totalDomains: domains.size,
       lastActivity: new Date().toISOString(),
+      services,
     };
   }
 

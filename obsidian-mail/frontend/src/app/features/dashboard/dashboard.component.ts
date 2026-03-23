@@ -1,13 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ApiService } from '../../core/services/api.service';
-import { ServerStats, QueueMessage } from '../../core/models';
-
-interface ServiceStatus {
-  name: string;
-  subtitle: string;
-  icon: string;
-  status: 'running' | 'stopped' | 'active' | 'inactive';
-}
+import { ServerStats, QueueMessage, ServiceStatus } from '../../core/models';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,13 +14,9 @@ export class DashboardComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
-  readonly services: ServiceStatus[] = [
-    { name: 'Postfix',  subtitle: 'MTA Engine',      icon: 'send',       status: 'running' },
-    { name: 'Dovecot',  subtitle: 'IMAP/POP3',        icon: 'inbox',      status: 'running' },
-    { name: 'Rspamd',   subtitle: 'Spam Filter',      icon: 'security',   status: 'running' },
-    { name: 'ClamAV',   subtitle: 'Antivirus',        icon: 'coronavirus',status: 'running' },
-    { name: 'Fail2ban', subtitle: 'IP Ban Manager',   icon: 'block',      status: 'active'  },
-  ];
+  get services(): ServiceStatus[] {
+    return this.stats()?.services ?? [];
+  }
 
   ngOnInit(): void {
     this.loadData();

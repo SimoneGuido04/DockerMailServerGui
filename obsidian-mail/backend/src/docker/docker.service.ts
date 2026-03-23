@@ -34,10 +34,10 @@ export class DockerService implements OnModuleInit {
   }
 
   /**
-   * Run `setup.sh <args>` inside the docker-mailserver container.
+   * Run `setup <args>` inside the docker-mailserver container.
    */
   async runSetup(args: string[]): Promise<ExecResult> {
-    return this.exec(['/bin/sh', '/usr/local/bin/setup.sh', ...args]);
+    return this.exec(['setup', ...args]);
   }
 
   /**
