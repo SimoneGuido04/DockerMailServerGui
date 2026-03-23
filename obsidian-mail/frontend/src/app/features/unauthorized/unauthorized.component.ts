@@ -14,6 +14,10 @@ import { AuthService } from '../../core/auth/auth.service';
             Your account does not have the required group membership
             to access Obsidian Mail.
           </p>
+          <div class="text-xs text-left bg-surface-variant text-on-surface p-3 mt-4 rounded-lg overflow-auto max-h-48">
+            <span class="opacity-50 font-bold">Zitadel Claims Debug:</span>
+            <pre class="mt-2">{{ auth.userProfile | json }}</pre>
+          </div>
         </div>
         <button (click)="auth.logout()"
                 class="w-full bg-primary-container text-on-primary-container py-3 rounded-xl
