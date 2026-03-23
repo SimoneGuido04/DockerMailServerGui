@@ -63,4 +63,8 @@ export class DashboardComponent implements OnInit {
     };
     return labels[status];
   }
+
+  min(value: number, max: number): number {
+    return Math.min(value, max);
+  }
 }

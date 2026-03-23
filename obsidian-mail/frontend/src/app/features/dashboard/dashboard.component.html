@@ -84,7 +84,7 @@
           </p>
           <div class="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
             <div class="h-full bg-primary rounded-full"
-                 [style.width.%]="(stats()?.totalMailboxes ?? 0) * 5 | min:100"></div>
+                 [style.width.%]="min((stats()?.totalMailboxes ?? 0) * 5, 100)"></div>
           </div>
         </div>
       </div>
@@ -107,7 +107,7 @@
           <div class="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
             <div class="h-full bg-secondary rounded-full"
                  [class.bg-tertiary]="(stats()?.queueSize ?? 0) > 50"
-                 [style.width.%]="(stats()?.queueSize ?? 0) | min:100"></div>
+                 [style.width.%]="min((stats()?.queueSize ?? 0), 100)"></div>
           </div>
         </div>
       </div>
