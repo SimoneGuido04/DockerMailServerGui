@@ -1,12 +1,12 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:3000/api',
+  apiBaseUrl: window.location.origin.includes('4200') ? 'http://localhost:3000/api' : '/api',
   oidc: {
     issuer: 'https://auth2.bitebuddy.it',
-    clientId: 'CONFIGURE_ME',          // Replace with your Zitadel client ID
-    redirectUri: 'http://localhost:4200/callback',
-    postLogoutRedirectUri: 'http://localhost:4200',
+    clientId: (window as any).__env?.clientId || 'INSERISCI_QUI_IL_TUO_CLIENT_ID',
+    redirectUri: `${window.location.origin}/callback`,
+    postLogoutRedirectUri: window.location.origin,
     scope: 'openid profile email',
-    requiredGroup: 'obsidian-mail-admins', // Zitadel role/group required for access
+    requiredGroup: (window as any).__env?.requiredGroup || 'obsidian-mail-admins', // Zitadel role/group required for access
   }
 };

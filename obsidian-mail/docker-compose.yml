@@ -5,6 +5,9 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+    environment:
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-CONFIGURE_ME}
+      - REQUIRED_GROUP=${REQUIRED_GROUP:-obsidian-mail-admins}
     depends_on:
       - backend
     networks:
