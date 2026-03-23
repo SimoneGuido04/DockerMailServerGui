@@ -1,0 +1,201 @@
+<div class="p-6 lg:p-8">
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold font-headline text-on-surface tracking-tight">Fortress Security</h1>
+    <p class="text-sm text-on-surface-variant font-mono mt-1">Rspamd · ClamAV · Fail2Ban · Postscreen telemetry</p>
+  </div>
+
+  <!-- Telemetry Row -->
+  @if (telemetry(); as tel) {
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="glass-card rounded-2xl p-5">
+        <p class="text-xs font-mono uppercase tracking-widest text-on-surface-variant mb-2">Postscreen Blocked</p>
+        <p class="text-3xl font-bold text-tertiary">{{ tel.postscreenBlocked | number }}</p>
+        <p class="text-xs font-mono text-on-surface-variant mt-1">Connections rejected</p>
+      </div>
+      <div class="glass-card rounded-2xl p-5">
+        <p class="text-xs font-mono uppercase tracking-widest text-on-surface-variant mb-2">TLS 1.3 Usage</p>
+        <p class="text-3xl font-bold text-secondary">{{ tel.tls13Usage | number }}</p>
+        <p class="text-xs font-mono text-on-surface-variant mt-1">Secure handshakes</p>
+      </div>
+      <div class="glass-card rounded-2xl p-5">
+        <p class="text-xs font-mono uppercase tracking-widest text-on-surface-variant mb-2">Insecure Auths</p>
+        <p class="text-3xl font-bold" [class.text-tertiary]="tel.insecureAuths > 0" [class.text-secondary]="tel.insecureAuths === 0">
+          {{ tel.insecureAuths | number }}
+        </p>
+        <p class="text-xs font-mono text-on-surface-variant mt-1">Plain auth attempts</p>
+      </div>
+    </div>
+  }
+
+  <!-- Rspamd + ClamAV row -->
+  <div class="grid grid-cols-12 gap-6 mb-6">
+
+    <!-- Rspamd Analysis -->
+    <div class="col-span-12 lg:col-span-7 glass-card rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="font-headline font-bold text-on-surface">Rspamd Analysis</h2>
+        @if (rspamd(); as r) {
+          <span class="text-xs font-mono text-on-surface-variant">{{ r.totalScanned | number }} messages scanned</span>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="space-y-4">
+          @for (_ of [1,2,3]; track $index) {
+            <div class="h-12 rounded-xl bg-white/5 animate-pulse"></div>
+          }
+        </div>
+      } @else if (rspamd(); as r) {
+        <!-- Key stats -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="bg-surface-container-lowest rounded-xl p-3 text-center">
+            <p class="text-xs font-mono text-on-surface-variant mb-1">Spam Ratio</p>
+            <p class="text-xl font-bold text-tertiary">{{ (r.spamRatio * 100).toFixed(1) }}%</p>
+          </div>
+          <div class="bg-surface-container-lowest rounded-xl p-3 text-center">
+            <p class="text-xs font-mono text-on-surface-variant mb-1">Ham</p>
+            <p class="text-xl font-bold text-secondary">{{ r.hamCount | number }}</p>
+          </div>
+          <div class="bg-surface-container-lowest rounded-xl p-3 text-center">
+            <p class="text-xs font-mono text-on-surface-variant mb-1">Avg Score</p>
+            <p class="text-xl font-bold text-primary">{{ r.avgScore.toFixed(2) }}</p>
+          </div>
+        </div>
+
+        <!-- Score distribution -->
+        <h3 class="text-xs font-mono uppercase tracking-widest text-on-surface-variant mb-3">Score Distribution</h3>
+        <div class="space-y-2">
+          @for (dist of r.scoreDistribution; track dist.range) {
+            <div class="flex items-center gap-3">
+              <span class="w-12 text-xs font-mono text-on-surface-variant text-right shrink-0">{{ dist.range }}</span>
+              <div class="flex-1 h-5 bg-white/5 rounded overflow-hidden">
+                <div class="h-full rounded transition-all duration-700"
+                     [style.width.%]="barWidth(dist.count, r.totalScanned)"
+                     [class.bg-secondary]="dist.color === 'secondary'"
+                     [class.bg-primary]="dist.color === 'primary'"
+                     [class.bg-tertiary]="dist.color === 'tertiary'"></div>
+              </div>
+              <span class="w-12 text-xs font-mono text-on-surface-variant shrink-0">{{ dist.count | number }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- ClamAV Threats -->
+    <div class="col-span-12 lg:col-span-5 glass-card rounded-2xl p-6 flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-headline font-bold text-on-surface">ClamAV</h2>
+        @if (clamav(); as c) {
+          <span class="text-xs font-mono text-on-surface-variant">{{ c.version }}</span>
+        }
+      </div>
+      @if (clamav(); as c) {
+        <p class="text-xs font-mono text-on-surface-variant mb-4">DB updated: {{ c.dbUpdated }}</p>
+        @if (c.threats.length === 0) {
+          <div class="flex-1 flex flex-col items-center justify-center gap-2 text-secondary">
+            <span class="material-symbols-outlined text-3xl" style="font-variation-settings:'FILL' 1">verified_user</span>
+            <p class="text-xs font-mono">No threats detected</p>
+          </div>
+        } @else {
+          <div class="flex-1 overflow-y-auto space-y-2 max-h-64">
+            @for (threat of c.threats; track $index) {
+              <div class="bg-surface-container-lowest rounded-xl p-3">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-mono text-tertiary font-bold">{{ threat.name }}</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono" [class]="threatStatusColor(threat.status)">
+                    {{ threat.status }}
+                  </span>
+                </div>
+                <p class="text-xs font-mono text-on-surface-variant truncate">{{ threat.target }}</p>
+                <p class="text-[10px] font-mono text-on-surface-variant/50 mt-1">{{ threat.timestamp }}</p>
+              </div>
+            }
+          </div>
+        }
+      } @else {
+        <div class="space-y-2">
+          @for (_ of [1,2,3]; track $index) {
+            <div class="h-16 rounded-xl bg-white/5 animate-pulse"></div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Fail2Ban -->
+  <div class="glass-card rounded-2xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-outline-variant/10 flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-4">
+        <h2 class="font-headline font-bold text-on-surface">Fail2Ban</h2>
+        @if (fail2ban(); as f2b) {
+          <span class="px-2 py-0.5 rounded-full text-xs font-mono bg-tertiary/10 text-tertiary">
+            {{ f2b.totalBans }} active bans
+          </span>
+        }
+      </div>
+      <div class="flex items-center gap-3">
+        @if (fail2ban()?.jails?.length) {
+          <select [value]="selectedJail()"
+                  (change)="selectedJail.set($any($event.target).value)"
+                  class="bg-surface-container border border-outline-variant/20 text-on-surface text-xs font-mono
+                         rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary/50">
+            <option value="all">All jails</option>
+            @for (jail of fail2ban()!.jails; track jail) {
+              <option [value]="jail">{{ jail }}</option>
+            }
+          </select>
+        }
+        <button (click)="flushBans()"
+                [disabled]="flushing() || !fail2ban()?.totalBans"
+                class="flex items-center gap-2 px-3 py-1.5 bg-tertiary/10 text-tertiary rounded-lg text-xs font-mono
+                       hover:bg-tertiary/20 transition-all disabled:opacity-40">
+          <span class="material-symbols-outlined text-sm">{{ flushing() ? 'hourglass_empty' : 'clear_all' }}</span>
+          Flush All
+        </button>
+      </div>
+    </div>
+
+    @if (filteredBans().length === 0) {
+      <div class="p-12 flex flex-col items-center gap-3 text-on-surface-variant">
+        <span class="material-symbols-outlined text-4xl opacity-30">security</span>
+        <p class="text-sm font-mono">No active bans</p>
+      </div>
+    } @else {
+      <div class="divide-y divide-transparent">
+        <div class="grid grid-cols-12 px-6 py-2 text-[10px] font-mono uppercase tracking-widest text-on-surface-variant">
+          <span class="col-span-3">IP Address</span>
+          <span class="col-span-2">Jail</span>
+          <span class="col-span-2">Banned At</span>
+          <span class="col-span-3">Time Remaining</span>
+          <span class="col-span-2 text-right">Action</span>
+        </div>
+        @for (ban of filteredBans(); track ban.ip) {
+          <div class="grid grid-cols-12 px-6 py-3 hover:bg-white/3 transition-colors items-center">
+            <span class="col-span-3 font-mono text-sm text-on-surface">{{ ban.ip }}</span>
+            <span class="col-span-2 text-xs font-mono text-on-surface-variant">{{ ban.jail }}</span>
+            <span class="col-span-2 text-xs font-mono text-on-surface-variant">{{ ban.bannedAt | slice:0:10 }}</span>
+            <div class="col-span-3">
+              <div class="flex items-center gap-2">
+                <div class="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div class="h-full bg-tertiary rounded-full" [style.width.%]="ban.remainingPercent"></div>
+                </div>
+                <span class="text-xs font-mono text-tertiary w-8 shrink-0">{{ ban.remaining }}</span>
+              </div>
+            </div>
+            <div class="col-span-2 flex justify-end">
+              <button (click)="unban(ban)"
+                      [disabled]="unbanning() === ban.ip"
+                      class="px-3 py-1 text-xs font-mono text-primary border border-primary/30
+                             rounded-lg hover:bg-primary/10 transition-all disabled:opacity-40">
+                {{ unbanning() === ban.ip ? '…' : 'Unban' }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

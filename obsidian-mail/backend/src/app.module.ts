@@ -5,6 +5,10 @@ import { DockerModule } from './docker/docker.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { MailboxesModule } from './mailboxes/mailboxes.module';
 import { SettingsModule } from './settings/settings.module';
+import { LogsModule } from './logs/logs.module';
+import { CertificatesModule } from './certificates/certificates.module';
+import { SecurityModule } from './security/security.module';
+import { DnsModule } from './dns/dns.module';
 
 @Module({
   imports: [
@@ -14,6 +18,10 @@ import { SettingsModule } from './settings/settings.module';
     DashboardModule,
     MailboxesModule,
     SettingsModule,
+    LogsModule,
+    CertificatesModule,
+    SecurityModule,
+    DnsModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

@@ -1,0 +1,178 @@
+<div class="p-6 lg:p-8">
+
+  <!-- Header -->
+  <div class="mb-8 flex items-center justify-between flex-wrap gap-4">
+    <div>
+      <h1 class="text-2xl font-bold font-headline text-on-surface tracking-tight">SSL / TLS Certificates</h1>
+      <p class="text-sm text-on-surface-variant font-mono mt-1">Certificate lifecycle · Let's Encrypt · DANE</p>
+    </div>
+    <div class="flex gap-3">
+      <button class="flex items-center gap-2 px-4 py-2 bg-white/5 border border-outline-variant/20 text-on-surface-variant
+                     rounded-xl text-sm font-mono hover:bg-white/10 transition-all">
+        <span class="material-symbols-outlined text-sm">upload_file</span>
+        Custom PEM
+      </button>
+      <button (click)="requestCert()"
+              [disabled]="requesting()"
+              class="flex items-center gap-2 px-4 py-2 bg-primary-container text-on-primary-container
+                     rounded-xl text-sm font-headline font-bold hover:brightness-110 transition-all disabled:opacity-50">
+        <span class="material-symbols-outlined text-sm">{{ requesting() ? 'hourglass_empty' : 'add' }}</span>
+        Request Certificate
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary + LE Status row -->
+  <div class="grid grid-cols-12 gap-6 mb-6">
+
+    <!-- LE Status (2/3) -->
+    <div class="col-span-12 lg:col-span-8 glass-card rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">lock</span>
+          <h2 class="font-headline font-bold text-on-surface">Let's Encrypt</h2>
+        </div>
+        @if (leStatus()?.enabled) {
+          <span class="px-3 py-1 rounded-full text-xs font-mono bg-secondary/10 text-secondary flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Active
+          </span>
+        } @else {
+          <span class="px-3 py-1 rounded-full text-xs font-mono bg-tertiary/10 text-tertiary">Inactive</span>
+        }
+      </div>
+
+      @if (leStatus(); as le) {
+        <div class="grid grid-cols-3 gap-4">
+          <div class="bg-surface-container-lowest rounded-xl p-4">
+            <p class="text-xs font-mono text-on-surface-variant mb-1">Auto Renewal</p>
+            <p class="text-sm font-bold" [class.text-secondary]="le.autoRenewal" [class.text-tertiary]="!le.autoRenewal">
+              {{ le.autoRenewal ? 'Enabled' : 'Disabled' }}
+            </p>
+          </div>
+          <div class="bg-surface-container-lowest rounded-xl p-4">
+            <p class="text-xs font-mono text-on-surface-variant mb-1">Next Check</p>
+            <p class="text-sm font-mono text-on-surface">{{ le.nextCheck | slice:0:10 }}</p>
+          </div>
+          <div class="bg-surface-container-lowest rounded-xl p-4">
+            <p class="text-xs font-mono text-on-surface-variant mb-1">Force HTTPS</p>
+            <p class="text-sm font-bold" [class.text-secondary]="le.forceHttps" [class.text-on-surface-variant]="!le.forceHttps">
+              {{ le.forceHttps ? 'On' : 'Off' }}
+            </p>
+          </div>
+        </div>
+      } @else {
+        <div class="grid grid-cols-3 gap-4">
+          @for (_ of [1,2,3]; track $index) {
+            <div class="h-20 rounded-xl bg-white/5 animate-pulse"></div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Cert Summary (1/3) -->
+    <div class="col-span-12 lg:col-span-4 glass-card rounded-2xl p-6">
+      <h2 class="font-headline font-bold text-on-surface mb-4">Certificate Status</h2>
+      @if (summary(); as s) {
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="flex items-center gap-2 text-sm font-mono text-secondary">
+              <span class="w-2 h-2 rounded-full bg-secondary"></span> Valid
+            </span>
+            <span class="text-xl font-bold text-secondary">{{ s.valid }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="flex items-center gap-2 text-sm font-mono text-yellow-400">
+              <span class="w-2 h-2 rounded-full bg-yellow-400"></span> Expiring Soon
+            </span>
+            <span class="text-xl font-bold text-yellow-400">{{ s.expiringSoon }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="flex items-center gap-2 text-sm font-mono text-tertiary">
+              <span class="w-2 h-2 rounded-full bg-tertiary"></span> Expired
+            </span>
+            <span class="text-xl font-bold text-tertiary">{{ s.expired }}</span>
+          </div>
+        </div>
+      } @else {
+        <div class="space-y-3">
+          @for (_ of [1,2,3]; track $index) {
+            <div class="h-8 rounded-lg bg-white/5 animate-pulse"></div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Certificates Table -->
+  <div class="glass-card rounded-2xl overflow-hidden mb-6">
+    <div class="px-6 py-4 border-b border-outline-variant/10">
+      <h2 class="font-headline font-bold text-on-surface">Certificates</h2>
+    </div>
+
+    @if (loading()) {
+      <div class="p-8 space-y-4">
+        @for (_ of [1,2]; track $index) {
+          <div class="h-14 rounded-xl bg-white/5 animate-pulse"></div>
+        }
+      </div>
+    } @else if (certificates().length === 0) {
+      <div class="p-12 flex flex-col items-center gap-3 text-on-surface-variant">
+        <span class="material-symbols-outlined text-4xl opacity-30">workspace_premium</span>
+        <p class="text-sm font-mono">No certificates found</p>
+        <button (click)="requestCert()" class="mt-2 text-primary text-sm font-mono hover:underline">
+          Request your first certificate →
+        </button>
+      </div>
+    } @else {
+      <div class="divide-y divide-transparent">
+        <div class="grid grid-cols-12 px-6 py-2 text-[10px] font-mono uppercase tracking-widest text-on-surface-variant">
+          <span class="col-span-4">Domain</span>
+          <span class="col-span-2">Status</span>
+          <span class="col-span-2">Issuer</span>
+          <span class="col-span-2">Expires</span>
+          <span class="col-span-1">Days</span>
+          <span class="col-span-1">Type</span>
+        </div>
+        @for (cert of certificates(); track cert.domain) {
+          <div class="grid grid-cols-12 px-6 py-4 hover:bg-white/3 transition-colors items-center">
+            <span class="col-span-4 font-mono text-sm text-on-surface">{{ cert.domain }}</span>
+            <span class="col-span-2">
+              <span class="px-2 py-0.5 rounded-full text-xs font-mono" [class]="statusBg(cert.status)">
+                {{ cert.status | titlecase }}
+              </span>
+            </span>
+            <span class="col-span-2 text-xs font-mono text-on-surface-variant truncate">{{ cert.issuer }}</span>
+            <span class="col-span-2 text-xs font-mono text-on-surface-variant">{{ cert.expiry | slice:0:10 }}</span>
+            <span class="col-span-1 text-sm font-bold" [class]="statusColor(cert.status)">{{ daysLabel(cert.daysRemaining) }}</span>
+            <span class="col-span-1 text-xs font-mono text-on-surface-variant">{{ cert.type === 'letsencrypt' ? 'LE' : 'Custom' }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- DANE Warning -->
+  @if (daneStatus(); as dane) {
+    <div class="glass-card rounded-2xl p-6 border border-tertiary/20">
+      <div class="flex items-start gap-4">
+        <span class="material-symbols-outlined text-tertiary mt-0.5" style="font-variation-settings:'FILL' 1">verified_user</span>
+        <div class="flex-1">
+          <h3 class="font-headline font-bold text-on-surface mb-1">DANE / TLSA Records</h3>
+          <p class="text-xs text-on-surface-variant font-mono mb-4">
+            {{ dane.configured ? 'TLSA records generated from your certificate fingerprints.' : 'No certificates configured — DANE records cannot be generated.' }}
+          </p>
+          @if (dane.records.length) {
+            <div class="space-y-2">
+              @for (rec of dane.records; track rec.domain) {
+                <div class="bg-surface-container-lowest rounded-xl p-3">
+                  <p class="text-xs font-mono text-primary mb-1">{{ rec.domain }}</p>
+                  <p class="text-xs font-mono text-on-surface-variant break-all">{{ rec.tlsaRecord }}</p>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

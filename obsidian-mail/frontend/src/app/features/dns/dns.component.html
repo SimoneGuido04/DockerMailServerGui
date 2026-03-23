@@ -1,0 +1,120 @@
+<div class="p-6 lg:p-8">
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold font-headline text-on-surface tracking-tight">DNS &amp; Deliverability</h1>
+    <p class="text-sm text-on-surface-variant font-mono mt-1">SPF · DKIM · DMARC · DANE · TLS authentication status</p>
+  </div>
+
+  <!-- Auth Status Cards -->
+  @if (authStatus(); as auth) {
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+
+      <!-- SPF -->
+      <div class="glass-card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-mono uppercase tracking-widest text-on-surface-variant">SPF</span>
+          <span class="material-symbols-outlined text-sm" [class]="spfColor(auth.spf)" style="font-variation-settings:'FILL' 1">verified</span>
+        </div>
+        <p class="text-2xl font-bold" [class]="spfColor(auth.spf)">{{ auth.spf }}</p>
+        <p class="text-xs font-mono text-on-surface-variant mt-1">Sender Policy Framework</p>
+      </div>
+
+      <!-- DKIM -->
+      <div class="glass-card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-mono uppercase tracking-widest text-on-surface-variant">DKIM</span>
+          <span class="material-symbols-outlined text-sm"
+                [class.text-secondary]="auth.dkimAlignment >= 90"
+                [class.text-yellow-400]="auth.dkimAlignment > 0 && auth.dkimAlignment < 90"
+                [class.text-tertiary]="auth.dkimAlignment === 0"
+                style="font-variation-settings:'FILL' 1">key</span>
+        </div>
+        <p class="text-2xl font-bold"
+           [class.text-secondary]="auth.dkimAlignment >= 90"
+           [class.text-yellow-400]="auth.dkimAlignment > 0 && auth.dkimAlignment < 90"
+           [class.text-tertiary]="auth.dkimAlignment === 0">
+          {{ auth.dkimAlignment }}%
+        </p>
+        <p class="text-xs font-mono text-on-surface-variant mt-1">Alignment score</p>
+      </div>
+
+      <!-- DMARC -->
+      <div class="glass-card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-mono uppercase tracking-widest text-on-surface-variant">DMARC</span>
+          <span class="material-symbols-outlined text-sm" [class]="dmarcColor(auth.dmarcPolicy)" style="font-variation-settings:'FILL' 1">shield</span>
+        </div>
+        <p class="text-2xl font-bold capitalize" [class]="dmarcColor(auth.dmarcPolicy)">{{ auth.dmarcPolicy }}</p>
+        <p class="text-xs font-mono text-on-surface-variant mt-1">Policy enforcement</p>
+      </div>
+
+      <!-- TLS -->
+      <div class="glass-card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-mono uppercase tracking-widest text-on-surface-variant">TLS</span>
+          <span class="material-symbols-outlined text-sm text-primary" style="font-variation-settings:'FILL' 1">lock</span>
+        </div>
+        <p class="text-2xl font-bold text-primary">{{ auth.tlsVersion }}</p>
+        <p class="text-xs font-mono text-on-surface-variant mt-1">Transport encryption</p>
+      </div>
+    </div>
+  } @else if (loading()) {
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      @for (_ of [1,2,3,4]; track $index) {
+        <div class="h-28 rounded-2xl bg-surface-container animate-pulse"></div>
+      }
+    </div>
+  }
+
+  <!-- DNS Record Generator -->
+  <div class="glass-card rounded-2xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-outline-variant/10 flex items-center justify-between">
+      <h2 class="font-headline font-bold text-on-surface">DNS Record Generator</h2>
+      <p class="text-xs font-mono text-on-surface-variant">Add these records to your DNS provider</p>
+    </div>
+
+    @if (loading()) {
+      <div class="p-8 space-y-4">
+        @for (_ of [1,2,3]; track $index) {
+          <div class="h-20 rounded-xl bg-white/5 animate-pulse"></div>
+        }
+      </div>
+    } @else if (error()) {
+      <div class="p-8 text-center text-tertiary font-mono text-sm">{{ error() }}</div>
+    } @else {
+      <div class="divide-y divide-transparent">
+        <div class="grid grid-cols-12 px-6 py-2 text-[10px] font-mono uppercase tracking-widest text-on-surface-variant">
+          <span class="col-span-1">Type</span>
+          <span class="col-span-3">Host</span>
+          <span class="col-span-7">Value</span>
+          <span class="col-span-1 text-right">Status</span>
+        </div>
+        @for (rec of records(); track rec.type) {
+          <div class="grid grid-cols-12 px-6 py-4 hover:bg-white/3 transition-colors items-start gap-2">
+            <span class="col-span-1">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-primary/10 text-primary">{{ rec.type }}</span>
+            </span>
+            <span class="col-span-3 font-mono text-xs text-on-surface-variant break-all">{{ rec.host }}</span>
+            <span class="col-span-7 font-mono text-xs text-on-surface break-all">{{ rec.value }}</span>
+            <div class="col-span-1 flex items-center justify-end gap-2">
+              <span class="text-xs font-mono" [class]="statusColor(rec.status)">
+                <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">
+                  {{ rec.status === 'ok' ? 'check_circle' : rec.status === 'warning' ? 'warning' : 'cancel' }}
+                </span>
+              </span>
+              <button
+                (click)="copyToClipboard(rec.value, rec.type)"
+                class="p-1 text-on-surface-variant hover:text-primary transition-colors"
+                title="Copy">
+                <span class="material-symbols-outlined text-sm">
+                  {{ copiedKey() === rec.type ? 'check' : 'content_copy' }}
+                </span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

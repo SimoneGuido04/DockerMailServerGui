@@ -1,0 +1,76 @@
+<!-- Backdrop -->
+<div class="fixed inset-0 z-[100] bg-background/70 backdrop-blur-sm flex items-start justify-center pt-24 px-4"
+     (click)="close()">
+
+  <!-- Panel -->
+  <div class="w-full max-w-xl glass-card rounded-2xl shadow-[0_48px_96px_-12px_rgba(0,0,0,0.8)] overflow-hidden"
+       (click)="$event.stopPropagation()">
+
+    <!-- Search input -->
+    <div class="flex items-center gap-3 px-4 py-3 border-b border-outline-variant/15">
+      <span class="material-symbols-outlined text-on-surface-variant">search</span>
+      <input
+        #searchInput
+        [(ngModel)]="query"
+        (ngModelChange)="onQueryChange()"
+        placeholder="Type a command or search…"
+        autofocus
+        class="flex-1 bg-transparent text-on-surface text-sm font-mono placeholder:text-on-surface-variant/50
+               focus:outline-none caret-primary">
+      <kbd class="hidden sm:flex px-2 py-0.5 rounded text-[10px] font-mono text-on-surface-variant bg-white/5 border border-outline-variant/20">ESC</kbd>
+    </div>
+
+    <!-- Results -->
+    <div class="max-h-80 overflow-y-auto py-1">
+      @if (filtered().length === 0) {
+        <div class="px-4 py-8 text-center text-on-surface-variant font-mono text-sm">No results found</div>
+      } @else {
+        @for (action of filtered(); track action.id; let i = $index) {
+          <button
+            (click)="execute(action)"
+            (mouseenter)="selectedIndex.set(i)"
+            class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-100"
+            [style.background]="selectedIndex() === i ? 'rgba(172,199,255,0.06)' : 'transparent'">
+            <span class="material-symbols-outlined text-lg shrink-0"
+                  [class]="action.iconColor ?? 'text-on-surface-variant'"
+                  style="font-variation-settings:'FILL' 1">
+              {{ action.icon }}
+            </span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-mono text-on-surface truncate"
+                 [class.text-primary]="selectedIndex() === i">{{ action.label }}</p>
+              @if (action.description) {
+                <p class="text-xs font-mono text-on-surface-variant truncate">{{ action.description }}</p>
+              }
+            </div>
+            @if (action.shortcut) {
+              <kbd class="hidden sm:flex px-2 py-0.5 rounded text-[10px] font-mono text-on-surface-variant bg-white/5 border border-outline-variant/20">
+                {{ action.shortcut }}
+              </kbd>
+            }
+            @if (selectedIndex() === i) {
+              <span class="material-symbols-outlined text-sm text-primary/50">keyboard_return</span>
+            }
+          </button>
+        }
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="px-4 py-2 border-t border-outline-variant/10 flex items-center gap-4 text-[10px] font-mono text-on-surface-variant">
+      <span class="flex items-center gap-1">
+        <kbd class="px-1.5 py-0.5 rounded bg-white/5 border border-outline-variant/20">↑</kbd>
+        <kbd class="px-1.5 py-0.5 rounded bg-white/5 border border-outline-variant/20">↓</kbd>
+        Navigate
+      </span>
+      <span class="flex items-center gap-1">
+        <kbd class="px-1.5 py-0.5 rounded bg-white/5 border border-outline-variant/20">↵</kbd>
+        Select
+      </span>
+      <span class="flex items-center gap-1">
+        <kbd class="px-1.5 py-0.5 rounded bg-white/5 border border-outline-variant/20">ESC</kbd>
+        Dismiss
+      </span>
+    </div>
+  </div>
+</div>

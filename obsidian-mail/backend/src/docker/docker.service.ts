@@ -1,7 +1,8 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Dockerode from 'dockerode';
-import { Writable } from 'stream';
+import { Writable, PassThrough } from 'stream';
+import { Observable } from 'rxjs';
 
 export interface ExecResult {
   stdout: string;
@@ -74,6 +75,48 @@ export class DockerService implements OnModuleInit {
         });
         stream!.on('error', reject);
       });
+    });
+  }
+
+  /**
+   * Exec a long-running command (e.g. `tail -f`) inside the container and
+   * emit each stdout line as an Observable item. Unsubscribing destroys the stream.
+   */
+  execStream(cmd: string[]): Observable<string> {
+    return new Observable<string>(subscriber => {
+      let activeStream: any = null;
+
+      const container = this.docker.getContainer(this.containerName);
+      container
+        .exec({ Cmd: cmd, AttachStdout: true, AttachStderr: false })
+        .then(exec => {
+          exec.start({ hijack: true, stdin: false }, (err: Error | null, stream: any) => {
+            if (err) { subscriber.error(err); return; }
+            activeStream = stream;
+
+            const stdout = new PassThrough();
+            this.docker.modem.demuxStream(stream, stdout, new PassThrough());
+
+            let buffer = '';
+            stdout.on('data', (chunk: Buffer) => {
+              buffer += chunk.toString();
+              const lines = buffer.split('\n');
+              buffer = lines.pop() ?? '';
+              for (const line of lines) {
+                if (line.trim()) subscriber.next(line);
+              }
+            });
+            stdout.on('end', () => subscriber.complete());
+            stream.on('error', (e: Error) => subscriber.error(e));
+          });
+        })
+        .catch(err => subscriber.error(err));
+
+      return () => {
+        if (activeStream) {
+          try { activeStream.destroy(); } catch { /* ignore */ }
+        }
+      };
     });
   }
 

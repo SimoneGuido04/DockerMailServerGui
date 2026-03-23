@@ -20,6 +20,22 @@ export const routes: Routes = [
         path: 'settings',
         loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent),
       },
+      {
+        path: 'dns',
+        loadComponent: () => import('./features/dns/dns.component').then(m => m.DnsComponent),
+      },
+      {
+        path: 'security',
+        loadComponent: () => import('./features/security/security.component').then(m => m.SecurityComponent),
+      },
+      {
+        path: 'certificates',
+        loadComponent: () => import('./features/certificates/certificates.component').then(m => m.CertificatesComponent),
+      },
+      {
+        path: 'logs',
+        loadComponent: () => import('./features/logs/logs.component').then(m => m.LogsComponent),
+      },
     ]
   },
   {
