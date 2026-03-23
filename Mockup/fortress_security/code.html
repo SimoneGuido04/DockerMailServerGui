@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Obsidian Mail - Security Control Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Roboto+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary": "#4edea3",
+              "surface-tint": "#acc7ff",
+              "secondary-fixed-dim": "#4edea3",
+              "surface-container-low": "#171c22",
+              "inverse-on-surface": "#2c3137",
+              "on-tertiary-fixed": "#410002",
+              "on-secondary-fixed-variant": "#005236",
+              "tertiary-fixed": "#ffdad6",
+              "inverse-primary": "#005bbf",
+              "on-tertiary": "#690007",
+              "primary-fixed": "#d7e2ff",
+              "on-error": "#690005",
+              "on-tertiary-fixed-variant": "#93000d",
+              "surface-container-high": "#252a30",
+              "surface-variant": "#30353b",
+              "error-container": "#93000a",
+              "on-surface-variant": "#c1c6d6",
+              "on-error-container": "#ffdad6",
+              "on-secondary-fixed": "#002113",
+              "outline-variant": "#414754",
+              "on-secondary": "#003824",
+              "on-surface": "#dee3eb",
+              "surface-container-lowest": "#0a0f14",
+              "background": "#0f1419",
+              "secondary-fixed": "#6ffbbe",
+              "surface-container": "#1b2026",
+              "tertiary-container": "#fe554d",
+              "primary-fixed-dim": "#acc7ff",
+              "primary-container": "#498fff",
+              "on-secondary-container": "#00311f",
+              "error": "#ffb4ab",
+              "inverse-surface": "#dee3eb",
+              "surface": "#0f1419",
+              "surface-bright": "#353a40",
+              "tertiary": "#ffb4ac",
+              "on-tertiary-container": "#5c0005"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "mono": ["Roboto Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-card {
+        background: rgba(48, 53, 59, 0.6);
+        backdrop-filter: blur(12px);
+      }
+      .ghost-border {
+        border: 1px solid rgba(65, 71, 84, 0.15);
+      }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/30 antialiased">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 border-b border-white/10 bg-slate-950/60 backdrop-blur-xl flex items-center justify-between px-6 h-16 w-full shadow-[0_24px_48px_-12px_rgba(0,0,0,0.5)]">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-slate-100">Obsidian Mail</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-slate-400 font-sans tracking-tight hover:bg-white/5 transition-colors duration-200 px-3 py-1 rounded" href="#">Overview</a>
+<a class="text-blue-400 font-bold font-sans tracking-tight hover:bg-white/5 transition-colors duration-200 px-3 py-1 rounded" href="#">Security</a>
+<a class="text-slate-400 font-sans tracking-tight hover:bg-white/5 transition-colors duration-200 px-3 py-1 rounded" href="#">System</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 mr-4">
+<span class="material-symbols-outlined text-slate-400 p-2 hover:bg-white/5 rounded-full cursor-pointer transition-transform active:scale-90" data-icon="security">security</span>
+<span class="material-symbols-outlined text-slate-400 p-2 hover:bg-white/5 rounded-full cursor-pointer transition-transform active:scale-90" data-icon="dns">dns</span>
+<span class="material-symbols-outlined text-slate-400 p-2 hover:bg-white/5 rounded-full cursor-pointer transition-transform active:scale-90" data-icon="terminal">terminal</span>
+<span class="material-symbols-outlined text-slate-400 p-2 hover:bg-white/5 rounded-full cursor-pointer transition-transform active:scale-90" data-icon="shield_heart">shield_with_heart</span>
+</div>
+<img alt="Administrator Profile" class="w-8 h-8 rounded-full border border-white/10" data-alt="User administrator profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoLn8LAQ-lc0v6lw7LTZjknNKZERu_I9R0nW5ZaMj_2etG6_yBUZRoIBje8Qumw0SmrWwaI6oxQskm-hsEuqGVNB3tP1xVNaPhsGquaZVL34hENnuDWwJWZ8c1ZQYMfO1prbecQ46XJUU-54VWLATKU3RGf2GBhz5glfUj8C11y5J6BSSLRh8cu06vJQBJSIs85_PpEo0XswIrkcCAP5jjc9CFwTV7xXy6hlOJi9Oo6Y4bscwbovmvM77kIpxlq769CPcdmHB3adwu"/>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-[#171c22] border-r border-white/5 flex flex-col pt-20 pb-6 px-4 z-40">
+<div class="mb-8 px-2">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_10px_rgba(78,222,163,0.5)]"></div>
+<span class="font-headline font-bold text-slate-100 tracking-tight">MailServer v1.2</span>
+</div>
+<p class="font-mono text-[10px] uppercase tracking-widest text-slate-500">Running: 14d 2h</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="dashboard">dashboard</span>
+<span class="font-mono text-xs uppercase tracking-widest">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="mail">mail</span>
+<span class="font-mono text-xs uppercase tracking-widest">Mailboxes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-500/10 text-blue-400 border-r-2 border-blue-500 transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="verified_user">verified_user</span>
+<span class="font-mono text-xs uppercase tracking-widest">Security</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="settings_ethernet">settings_ethernet</span>
+<span class="font-mono text-xs uppercase tracking-widest">DNS &amp; Config</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="list_alt">list_alt</span>
+<span class="font-mono text-xs uppercase tracking-widest">System Logs</span>
+</a>
+</nav>
+<button class="mt-4 mb-8 bg-primary-container text-on-primary-container py-2.5 px-4 rounded-lg font-headline font-semibold text-sm flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(172,199,255,0.2)]">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+            New Mailbox
+        </button>
+<div class="pt-4 border-t border-white/5 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="settings">settings</span>
+<span class="font-mono text-xs uppercase tracking-widest">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="help_outline">help_outline</span>
+<span class="font-mono text-xs uppercase tracking-widest">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="pl-64 pt-16 min-h-screen">
+<div class="p-8 max-w-7xl mx-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-10">
+<div>
+<p class="font-mono text-[10px] uppercase tracking-[0.2em] text-tertiary mb-2 font-bold">Fortress Module v4.0</p>
+<h1 class="text-4xl font-headline font-extrabold tracking-tight text-on-surface">Security Control Center</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right">
+<p class="font-mono text-[10px] text-slate-500 uppercase tracking-widest mb-1">Defense Level</p>
+<div class="flex items-center gap-1">
+<div class="h-1 w-6 bg-secondary rounded-full"></div>
+<div class="h-1 w-6 bg-secondary rounded-full"></div>
+<div class="h-1 w-6 bg-secondary rounded-full"></div>
+<div class="h-1 w-6 bg-secondary/30 rounded-full"></div>
+<span class="font-mono text-xs text-secondary ml-2 font-bold">OPTIMAL</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bento Grid -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Rspamd Stats Card -->
+<div class="col-span-12 lg:col-span-7 glass-card ghost-border rounded-xl p-6 flex flex-col">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="font-headline font-bold text-lg mb-1">Rspamd Analysis</h2>
+<p class="font-mono text-[10px] text-slate-500 uppercase tracking-widest">Filter: active-cluster-01</p>
+</div>
+<div class="px-3 py-1 bg-surface-container-high rounded-full border border-white/5">
+<span class="font-mono text-[10px] text-secondary font-bold">BAYESIAN: SYNCED</span>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-4 mb-8">
+<div class="bg-surface-container-lowest rounded-lg p-4 border border-white/5">
+<p class="font-mono text-[10px] text-slate-500 uppercase tracking-widest mb-1">Total Scanned</p>
+<p class="text-2xl font-mono font-bold">142,891</p>
+</div>
+<div class="bg-surface-container-lowest rounded-lg p-4 border border-white/5">
+<p class="font-mono text-[10px] text-slate-500 uppercase tracking-widest mb-1">Spam Ratio</p>
+<p class="text-2xl font-mono font-bold text-tertiary">14.2%</p>
+</div>
+<div class="bg-surface-container-lowest rounded-lg p-4 border border-white/5">
+<p class="font-mono text-[10px] text-slate-500 uppercase tracking-widest mb-1">Avg Score</p>
+<p class="text-2xl font-mono font-bold text-primary">2.41</p>
+</div>
+</div>
+<!-- Simplified Chart Visualization -->
+<div class="flex-1 min-h-[160px] relative flex items-end gap-2">
+<!-- Bar chart markers -->
+<div class="flex-1 bg-secondary/20 h-[30%] rounded-t-sm relative group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity font-mono text-[10px] bg-surface-container-highest px-2 py-1 rounded">Ham</div>
+</div>
+<div class="flex-1 bg-secondary/20 h-[55%] rounded-t-sm"></div>
+<div class="flex-1 bg-secondary/40 h-[85%] rounded-t-sm"></div>
+<div class="flex-1 bg-secondary/20 h-[65%] rounded-t-sm"></div>
+<div class="flex-1 bg-secondary/10 h-[45%] rounded-t-sm"></div>
+<div class="flex-1 bg-tertiary/20 h-[35%] rounded-t-sm"></div>
+<div class="flex-1 bg-tertiary/40 h-[25%] rounded-t-sm"></div>
+<div class="flex-1 bg-tertiary/60 h-[15%] rounded-t-sm"></div>
+<div class="flex-1 bg-tertiary/80 h-[10%] rounded-t-sm"></div>
+<div class="flex-1 bg-tertiary h-[5%] rounded-t-sm relative group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity font-mono text-[10px] bg-tertiary text-on-tertiary px-2 py-1 rounded">Critical</div>
+</div>
+</div>
+<div class="flex justify-between mt-4 border-t border-white/5 pt-2">
+<span class="font-mono text-[10px] text-slate-500">SCORE: -15</span>
+<span class="font-mono text-[10px] text-slate-500">SCORE: +15</span>
+</div>
+</div>
+<!-- ClamAV Threat Log -->
+<div class="col-span-12 lg:col-span-5 glass-card ghost-border rounded-xl p-6 flex flex-col border-l-4 border-l-tertiary-container/40">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="font-headline font-bold text-lg mb-1 text-tertiary">ClamAV Threats</h2>
+<p class="font-mono text-[10px] text-slate-500 uppercase tracking-widest">Scanner active</p>
+</div>
+<div class="text-right">
+<p class="font-mono text-[10px] text-slate-500 uppercase tracking-widest">DB Updated</p>
+<p class="font-mono text-xs text-secondary">04m 12s ago</p>
+</div>
+</div>
+<div class="space-y-3 overflow-y-auto max-h-[340px] pr-2 custom-scrollbar">
+<!-- Threat Entry -->
+<div class="flex items-start gap-4 p-3 bg-tertiary-container/5 rounded-lg border border-tertiary-container/10">
+<span class="material-symbols-outlined text-tertiary-container mt-1" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+<div class="flex-1 min-w-0">
+<p class="font-mono text-xs font-bold text-on-surface truncate">Win.Trojan.Ramnit-9812423-0</p>
+<p class="font-mono text-[10px] text-slate-500 mt-1">Target: info@company.com</p>
+<div class="flex justify-between items-center mt-2">
+<span class="text-[10px] bg-tertiary-container text-on-tertiary-container px-2 py-0.5 rounded font-mono font-bold">QUARANTINED</span>
+<span class="text-[10px] text-slate-500 font-mono italic">21:04:15 UTC</span>
+</div>
+</div>
+</div>
+<!-- Threat Entry -->
+<div class="flex items-start gap-4 p-3 bg-tertiary-container/5 rounded-lg border border-tertiary-container/10 opacity-80">
+<span class="material-symbols-outlined text-tertiary-container mt-1" data-icon="bug_report">bug_report</span>
+<div class="flex-1 min-w-0">
+<p class="font-mono text-xs font-bold text-on-surface truncate">Eicar-Test-Signature</p>
+<p class="font-mono text-[10px] text-slate-500 mt-1">Target: dev-null@obsidian.io</p>
+<div class="flex justify-between items-center mt-2">
+<span class="text-[10px] bg-tertiary-container text-on-tertiary-container px-2 py-0.5 rounded font-mono font-bold">DELETED</span>
+<span class="text-[10px] text-slate-500 font-mono italic">19:42:01 UTC</span>
+</div>
+</div>
+</div>
+<!-- Threat Entry -->
+<div class="flex items-start gap-4 p-3 bg-tertiary-container/5 rounded-lg border border-tertiary-container/10 opacity-60">
+<span class="material-symbols-outlined text-tertiary-container mt-1" data-icon="warning">warning</span>
+<div class="flex-1 min-w-0">
+<p class="font-mono text-xs font-bold text-on-surface truncate">Phish.Heur.Generic.92</p>
+<p class="font-mono text-[10px] text-slate-500 mt-1">Target: payroll@obsidian.io</p>
+<div class="flex justify-between items-center mt-2">
+<span class="text-[10px] bg-tertiary-container text-on-tertiary-container px-2 py-0.5 rounded font-mono font-bold">QUARANTINED</span>
+<span class="text-[10px] text-slate-500 font-mono italic">14:15:33 UTC</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Fail2Ban Management -->
+<div class="col-span-12 glass-card ghost-border rounded-xl p-8">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+<div>
+<h2 class="font-headline font-bold text-xl mb-1">Fail2Ban Perimeter Defense</h2>
+<p class="font-mono text-[10px] text-slate-500 uppercase tracking-widest">Active Jails: 8 | Total Bans: 1,429</p>
+</div>
+<div class="flex flex-wrap gap-3">
+<select class="bg-surface-container-highest border border-white/10 rounded-lg text-xs font-mono py-2 pl-4 pr-10 focus:ring-primary focus:border-primary">
+<option>JAIL: POSTFIX-SASL</option>
+<option>JAIL: DOVECOT</option>
+<option>JAIL: SSHD</option>
+<option>JAIL: RECIPIENT-CHECK</option>
+</select>
+<button class="bg-surface-container-high hover:bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-xs font-mono uppercase tracking-widest transition-colors">
+                                Export IP List
+                            </button>
+<button class="bg-tertiary-container text-on-tertiary-container px-4 py-2 rounded-lg text-xs font-mono uppercase tracking-widest font-bold hover:brightness-110 transition-all">
+                                Flush All Bans
+                            </button>
+</div>
+</div>
+<div class="w-full overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-white/5">
+<th class="py-4 px-4 font-mono text-[10px] uppercase tracking-widest text-slate-500">Attacker IP</th>
+<th class="py-4 px-4 font-mono text-[10px] uppercase tracking-widest text-slate-500">Jail / Trigger</th>
+<th class="py-4 px-4 font-mono text-[10px] uppercase tracking-widest text-slate-500">Ban Duration</th>
+<th class="py-4 px-4 font-mono text-[10px] uppercase tracking-widest text-slate-500">Country</th>
+<th class="py-4 px-4 font-mono text-[10px] uppercase tracking-widest text-slate-500 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="py-4 px-4">
+<span class="font-mono text-sm text-tertiary font-bold">185.122.1.42</span>
+</td>
+<td class="py-4 px-4">
+<span class="font-mono text-xs bg-surface-container-high px-2 py-1 rounded border border-white/5">postfix-sasl</span>
+</td>
+<td class="py-4 px-4">
+<div class="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden max-w-[120px]">
+<div class="bg-tertiary h-full w-[85%]"></div>
+</div>
+<p class="font-mono text-[10px] text-slate-500 mt-1">20h 14m remaining</p>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs">Netherlands (NL)</span>
+</div>
+</td>
+<td class="py-4 px-4 text-right">
+<button class="font-mono text-[10px] font-bold text-primary hover:text-white border border-primary/20 hover:border-primary px-3 py-1 rounded uppercase tracking-tighter transition-all">
+                                            Unban IP
+                                        </button>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="py-4 px-4">
+<span class="font-mono text-sm text-tertiary font-bold">92.242.12.191</span>
+</td>
+<td class="py-4 px-4">
+<span class="font-mono text-xs bg-surface-container-high px-2 py-1 rounded border border-white/5">dovecot</span>
+</td>
+<td class="py-4 px-4">
+<div class="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden max-w-[120px]">
+<div class="bg-tertiary h-full w-[40%]"></div>
+</div>
+<p class="font-mono text-[10px] text-slate-500 mt-1">08h 12m remaining</p>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs">United States (US)</span>
+</div>
+</td>
+<td class="py-4 px-4 text-right">
+<button class="font-mono text-[10px] font-bold text-primary hover:text-white border border-primary/20 hover:border-primary px-3 py-1 rounded uppercase tracking-tighter transition-all">
+                                            Unban IP
+                                        </button>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="py-4 px-4">
+<span class="font-mono text-sm text-tertiary font-bold">103.44.22.1</span>
+</td>
+<td class="py-4 px-4">
+<span class="font-mono text-xs bg-surface-container-high px-2 py-1 rounded border border-white/5">sshd</span>
+</td>
+<td class="py-4 px-4">
+<div class="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden max-w-[120px]">
+<div class="bg-tertiary h-full w-[10%]"></div>
+</div>
+<p class="font-mono text-[10px] text-slate-500 mt-1">01h 05m remaining</p>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs">China (CN)</span>
+</div>
+</td>
+<td class="py-4 px-4 text-right">
+<button class="font-mono text-[10px] font-bold text-primary hover:text-white border border-primary/20 hover:border-primary px-3 py-1 rounded uppercase tracking-tighter transition-all">
+                                            Unban IP
+                                        </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Telemetry Small Cards -->
+<div class="col-span-12 md:col-span-4 glass-card ghost-border rounded-xl p-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="terminal">terminal</span>
+</div>
+<div>
+<p class="font-mono text-[10px] text-slate-500 uppercase tracking-widest">Postscreen</p>
+<p class="text-xl font-headline font-bold">82.4% Blocked</p>
+</div>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 glass-card ghost-border rounded-xl p-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded bg-secondary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="sync_alt">sync_alt</span>
+</div>
+<div>
+<p class="font-mono text-[10px] text-slate-500 uppercase tracking-widest">TLS 1.3 Usage</p>
+<p class="text-xl font-headline font-bold">98.1% Active</p>
+</div>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 glass-card ghost-border rounded-xl p-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded bg-tertiary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary" data-icon="lock_open">lock_open</span>
+</div>
+<div>
+<p class="font-mono text-[10px] text-slate-500 uppercase tracking-widest">Insecure Auths</p>
+<p class="text-xl font-headline font-bold">0 Detected</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Background Atmospheric Elements -->
+<div class="fixed top-0 right-0 -z-10 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
+<div class="fixed bottom-0 left-0 -z-10 w-[400px] h-[400px] bg-tertiary/5 blur-[100px] rounded-full pointer-events-none"></div>
+</body></html>
