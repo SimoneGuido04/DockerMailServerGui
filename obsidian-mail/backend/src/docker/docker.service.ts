@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Dockerode from 'dockerode';
+import { Writable } from 'stream';
 
 export interface ExecResult {
   stdout: string;
@@ -58,11 +59,14 @@ export class DockerService implements OnModuleInit {
         let stdout = '';
         let stderr = '';
 
-        this.docker.modem.demuxStream(stream!, {
-          write: (chunk: Buffer) => { stdout += chunk.toString(); }
-        }, {
-          write: (chunk: Buffer) => { stderr += chunk.toString(); }
+        const stdoutStream = new Writable({
+          write(chunk, enc, cb) { stdout += chunk.toString(); cb(); }
         });
+        const stderrStream = new Writable({
+          write(chunk, enc, cb) { stderr += chunk.toString(); cb(); }
+        });
+
+        this.docker.modem.demuxStream(stream!, stdoutStream, stderrStream);
 
         stream!.on('end', async () => {
           const inspect = await exec.inspect();

@@ -12,7 +12,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
-  handleRequest(err: unknown, user: Record<string, unknown> | false): Record<string, unknown> {
+  handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext, status?: any): TUser {
     if (err || !user) throw new UnauthorizedException();
 
     // Check Zitadel group/role claim

@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DockerService } from '../docker/docker.service';
 
-export interface CreateMailboxDto {
+export class CreateMailboxDto {
   email: string;
   password: string;
   quota?: string;
