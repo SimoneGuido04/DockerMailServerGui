@@ -47,6 +47,34 @@
 ### DNS Logs
 ![DNS Logs](Mockup/dns_logs/screen.png)
 
+## 🔒 Zitadel Authentication Setup
+
+Obsidian Mail relies on [Zitadel](https://zitadel.com/) for secure OIDC (OpenID Connect) authentication and Role-Based Access Control (RBAC). Follow these exact steps to configure your project:
+
+1. **Create an Application:**
+   - Go to your Zitadel Project and create a new **Single Page Application (SPA)**.
+   - Set the **Redirect URIs** to `http://localhost/callback` (or your production domain).
+   - Set the **Post Logout URIs** to `http://localhost/` (or your production domain).
+   - *Auth Method:* PKCE (Proof Key for Code Exchange) without Client Secret.
+   
+2. **Configure Roles:**
+   - In your Zitadel Project, go to **Roles** and click **New**.
+   - Create a role with the Key: `admin` (or whatever you prefer).
+   - Go to **Authorizations** and grant your user the `admin` role for this project.
+
+3. **Enable Role Assertion (CRITICAL):**
+   - Go to your Zitadel Project -> **General** or **Settings**.
+   - Ensure the box **Assert Roles on Authentication** is checked.
+   - *If you skip this step, Zitadel will not include your user's role in the security token, and Obsidian Mail will deny access.*
+
+4. **Define Environment Variables:**
+   - Create `obsidian-mail/.env` (from `.env.example`).
+   - Copy the `Client ID` from Zitadel and paste it as `OIDC_CLIENT_ID=...`.
+   - Update `ZITADEL_ISSUER` with your Zitadel instance URL (e.g., `https://auth2.bitebuddy.it`).
+   - Update `REQUIRED_GROUP` to match your Role Key (e.g., `admin`).
+
+---
+
 ## 🚀 Quick Start (Local Development)
 
 ### 1. Environment Setup
@@ -57,10 +85,6 @@ Copy `.env.example` in the `obsidian-mail` directory to `.env` and configure you
 cd obsidian-mail
 cp .env.example .env
 ```
-
-Open `.env` and set `FRONTEND_URL=http://localhost:4200` and the required Zitadel configuration.
-
-Also, be sure to update `frontend/src/environments/environment.ts` with your Zitadel `clientId`.
 
 ### 2. Running with Docker Compose
 
