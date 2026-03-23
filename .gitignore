@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+jspm_packages/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Build & compiled outputs
+dist/
+build/
+out/
+.angular/
+.next/
+.nuxt/
+.vuepress/dist/
+
+# Test reports
+coverage/
+.nyc_output/
+
+# Environment variables
+.env
+.env.test
+*.env.local
+.env.*.local
+!.env.example
+
+# IDEs and editors
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+.project
+.classpath
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Project-specific / Tooling
+.claude/
+.eslintcache
+.stylelintcache
+
+# Vite / bundlers
+.cache/
+.parcel-cache/
+
+# Docker build cache (if any local folders are used)
+.docker/

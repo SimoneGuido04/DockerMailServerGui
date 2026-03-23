@@ -1,0 +1,35 @@
+services:
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - obsidian-mail
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      CORS_ORIGIN: ${FRONTEND_URL:-http://localhost}
+      MAILSERVER_CONTAINER: ${MAILSERVER_CONTAINER:-mailserver}
+      ZITADEL_ISSUER: ${ZITADEL_ISSUER:-https://auth2.bitebuddy.it}
+      REQUIRED_GROUP: ${REQUIRED_GROUP:-obsidian-mail-admins}
+      MAILSERVER_ENV_FILE: /data/mailserver.env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro   # Docker socket (read-only)
+      - mailserver-env:/data
+    networks:
+      - obsidian-mail
+
+networks:
+  obsidian-mail:
+    driver: bridge
+
+volumes:
+  mailserver-env:

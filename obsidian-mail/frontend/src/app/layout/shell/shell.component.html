@@ -1,0 +1,111 @@
+<!-- ── Top Navigation Bar ──────────────────────────────────────────────── -->
+<nav class="fixed top-0 w-full z-50 flex items-center justify-between px-6 h-16
+            border-b border-white/10 bg-surface-container-lowest/80 backdrop-blur-xl
+            shadow-[0_24px_48px_-12px_rgba(0,0,0,0.5)]">
+
+  <!-- Left: Brand + mobile menu toggle -->
+  <div class="flex items-center gap-4">
+    <button class="lg:hidden p-2 text-on-surface-variant hover:bg-white/5 rounded-lg transition-colors"
+            (click)="toggleSidebar()">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <span class="text-xl font-bold tracking-tighter text-on-surface font-headline">
+      Obsidian Mail
+    </span>
+    <div class="hidden md:flex items-center gap-2 text-primary text-sm font-mono">
+      <span class="material-symbols-outlined text-base">security</span>
+      <span>Network Secure</span>
+    </div>
+  </div>
+
+  <!-- Right: Node badge + user -->
+  <div class="flex items-center gap-3">
+    <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg
+                bg-white/5 border border-white/10">
+      <span class="material-symbols-outlined text-secondary text-base"
+            style="font-variation-settings:'FILL' 1">dns</span>
+      <span class="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">
+        docker-mailserver
+      </span>
+    </div>
+    <div class="h-8 w-8 rounded-full bg-surface-container-high border border-outline-variant/30
+                flex items-center justify-center text-xs font-mono text-on-surface-variant
+                select-none cursor-pointer"
+         title="{{ auth.userName }}">
+      {{ auth.userName.charAt(0).toUpperCase() }}
+    </div>
+    <button (click)="auth.logout()"
+            class="p-2 text-on-surface-variant hover:bg-white/5 rounded-lg transition-colors"
+            title="Logout">
+      <span class="material-symbols-outlined">logout</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
+<aside class="fixed left-0 top-0 z-40 h-full w-64 flex flex-col pt-20 pb-6 px-4
+              border-r border-white/5 bg-surface-container-low
+              transition-transform duration-300
+              lg:translate-x-0"
+       [class.-translate-x-full]="!sidebarOpen()"
+       [class.translate-x-0]="sidebarOpen()">
+
+  <!-- Server status badge -->
+  <div class="mb-8 px-2">
+    <div class="flex items-center gap-3 mb-1">
+      <div class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_10px_rgba(78,222,163,0.5)]"></div>
+      <h2 class="text-xs font-mono uppercase tracking-widest text-on-surface">docker-mailserver</h2>
+    </div>
+    <p class="text-[10px] font-mono text-on-surface-variant pl-5 uppercase tracking-widest">
+      Managed via Docker API
+    </p>
+  </div>
+
+  <!-- Navigation links -->
+  <nav class="flex-1 space-y-1">
+    @for (item of navItems; track item.route) {
+      <a [routerLink]="item.route"
+         routerLinkActive="bg-primary/10 text-primary border-r-2 border-primary"
+         [routerLinkActiveOptions]="{ exact: false }"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg
+                text-on-surface-variant hover:text-on-surface hover:bg-white/5
+                transition-all duration-200 font-mono text-xs uppercase tracking-widest"
+         (click)="sidebarOpen.set(false)">
+        <span class="material-symbols-outlined">{{ item.icon }}</span>
+        <span>{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <!-- Bottom actions -->
+  <div class="mt-auto space-y-4">
+    <a routerLink="/mailboxes"
+       class="w-full bg-primary-container text-on-primary-container py-3 rounded-xl
+              font-headline font-bold text-sm flex items-center justify-center gap-2
+              hover:brightness-110 active:scale-95 transition-all
+              shadow-[0_0_20px_rgba(172,199,255,0.2)] cursor-pointer">
+      <span class="material-symbols-outlined text-lg">add</span>
+      New Mailbox
+    </a>
+    <div class="pt-4 border-t border-white/5">
+      <button (click)="auth.logout()"
+              class="flex items-center gap-3 w-full px-3 py-2 text-on-surface-variant
+                     hover:text-on-surface text-xs font-mono uppercase tracking-widest
+                     hover:bg-white/5 rounded-lg transition-colors">
+        <span class="material-symbols-outlined text-sm">logout</span>
+        Sign Out
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- Mobile backdrop -->
+@if (sidebarOpen()) {
+  <div class="fixed inset-0 z-30 bg-background/60 backdrop-blur-sm lg:hidden"
+       (click)="sidebarOpen.set(false)"></div>
+}
+
+<!-- ── Main Content Area ─────────────────────────────────────────────────── -->
+<main class="lg:ml-64 pt-20 min-h-screen bg-background">
+  <router-outlet />
+</main>
