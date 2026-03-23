@@ -13,7 +13,7 @@ function initializeOAuth(oauthService: OAuthService, authService: AuthService) {
     oauthService.configure(authConfig);
     await oauthService.loadDiscoveryDocumentAndTryLogin();
     oauthService.setupAutomaticSilentRefresh();
-    authService.init();
+    await authService.init();
   };
 }
 

@@ -8,12 +8,28 @@ export class AuthService {
 
   readonly isAuthenticated = computed(() => this._authState());
   private readonly _authState = signal(false);
+  private readonly _userProfile = signal<Record<string, unknown>>({});
 
-  init(): void {
+  async init(): Promise<void> {
+    const updateState = async () => {
+      const valid = this.oauthService.hasValidAccessToken();
+      this._authState.set(valid);
+      if (valid) {
+        try {
+          const profile = await this.oauthService.loadUserProfile();
+          this._userProfile.set((profile as any).info || profile);
+        } catch (e) {
+          this._userProfile.set((this.oauthService.getIdentityClaims() as Record<string, unknown>) ?? {});
+        }
+      } else {
+        this._userProfile.set({});
+      }
+    };
+
     this.oauthService.events.subscribe(() => {
-      this._authState.set(this.oauthService.hasValidAccessToken());
+      updateState();
     });
-    this._authState.set(this.oauthService.hasValidAccessToken());
+    await updateState();
   }
 
   login(): void {
@@ -29,7 +45,7 @@ export class AuthService {
   }
 
   get userProfile(): Record<string, unknown> {
-    return (this.oauthService.getIdentityClaims() as Record<string, unknown>) ?? {};
+    return this._userProfile();
   }
 
   get userEmail(): string {

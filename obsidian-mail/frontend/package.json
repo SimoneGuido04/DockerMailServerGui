@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
+    "start": "npx @tailwindcss/cli -i src/styles.css -o src/tailwind.css --watch & ng serve",
+    "build": "npx @tailwindcss/cli -i src/styles.css -o src/tailwind.css && ng build",
+    "watch": "npx @tailwindcss/cli -i src/styles.css -o src/tailwind.css --watch & ng build --watch --configuration development",
     "test": "ng test"
   },
   "private": true,
