@@ -18,6 +18,12 @@ export interface ServerStats {
   services: ServiceStatus[];
 }
 
+export interface ThroughputPoint {
+  label: string;
+  sent: number;
+  received: number;
+}
+
 export interface QueueMessage {
   id: string;
   from: string;

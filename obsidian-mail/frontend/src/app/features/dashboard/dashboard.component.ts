@@ -1,6 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ApiService } from '../../core/services/api.service';
-import { ServerStats, QueueMessage, ServiceStatus } from '../../core/models';
+import { ServerStats, QueueMessage, ServiceStatus, ThroughputPoint } from '../../core/models';
 
 @Component({
   selector: 'app-dashboard',
@@ -11,8 +11,23 @@ export class DashboardComponent implements OnInit {
 
   readonly stats = signal<ServerStats | null>(null);
   readonly queue = signal<QueueMessage[]>([]);
+  readonly throughput = signal<ThroughputPoint[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
+
+  readonly throughputMax = computed(() => {
+    const points = this.throughput();
+    return Math.max(1, ...points.map(p => Math.max(p.sent, p.received)));
+  });
+
+  readonly throughputHasActivity = computed(() =>
+    this.throughput().some(p => p.sent > 0 || p.received > 0)
+  );
+
+  normalizeHeight(value: number): number {
+    const pct = Math.round((value / this.throughputMax()) * 100);
+    return pct > 0 ? Math.max(pct, 4) : 0;
+  }
 
   get services(): ServiceStatus[] {
     return this.stats()?.services ?? [];
@@ -39,6 +54,10 @@ export class DashboardComponent implements OnInit {
 
     this.api.getQueue().subscribe({
       next: (q) => this.queue.set(q),
+    });
+
+    this.api.getThroughput().subscribe({
+      next: (t) => this.throughput.set(t),
     });
   }
 

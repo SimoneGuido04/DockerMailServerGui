@@ -59,14 +59,24 @@
             </div>
           </div>
         </div>
-        <!-- Bar chart (decorative — replace with Chart.js or ngx-charts if needed) -->
-        <div class="absolute inset-x-0 bottom-0 h-32 flex items-end px-1 gap-1">
-          @for (bar of [40,60,35,80,55,45,70,90,30,65,50,85]; track $index) {
-            <div class="flex-1 transition-colors hover:opacity-80"
-                 [class]="$index % 2 === 0 ? 'bg-primary/20 hover:bg-primary/40' : 'bg-secondary/20 hover:bg-secondary/40'"
-                 [style.height.%]="bar"></div>
-          }
-        </div>
+        <!-- Bar chart: coppie sent/recv per ora (ultime 12 ore) -->
+        @if (throughputHasActivity()) {
+          <div class="absolute inset-x-0 bottom-0 h-32 flex items-end px-2 gap-1">
+            @for (point of throughput(); track point.label) {
+              <div class="flex-1 flex items-end gap-px" [title]="point.label + ' — Sent: ' + point.sent + '  Recv: ' + point.received">
+                <div class="flex-1 rounded-t-sm bg-primary/30 hover:bg-primary/50 transition-colors"
+                     [style.height.%]="normalizeHeight(point.sent)"></div>
+                <div class="flex-1 rounded-t-sm bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                     [style.height.%]="normalizeHeight(point.received)"></div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="absolute inset-x-0 bottom-0 h-32 flex flex-col items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-on-surface-variant opacity-30 text-4xl">mail_outline</span>
+            <span class="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">No mail activity in the last 12h</span>
+          </div>
+        }
       </div>
 
       <!-- KPI: Total Mailboxes -->

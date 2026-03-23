@@ -96,6 +96,44 @@ export class DashboardService {
     }
   }
 
+  async getThroughput(): Promise<{ label: string; sent: number; received: number }[]> {
+    const [sentResult, recvResult] = await Promise.all([
+      this.docker.exec([
+        'sh', '-c',
+        "grep 'postfix/smtp\\[' /var/log/mail/mail.log 2>/dev/null | grep 'status=sent' | awk '{print substr($3,1,2)}' | sort | uniq -c || echo ''",
+      ]),
+      this.docker.exec([
+        'sh', '-c',
+        "grep -E 'postfix/(lmtp|virtual)\\[' /var/log/mail/mail.log 2>/dev/null | grep 'status=sent' | awk '{print substr($3,1,2)}' | sort | uniq -c || echo ''",
+      ]),
+    ]);
+
+    const parseHourCounts = (output: string): Map<number, number> => {
+      const map = new Map<number, number>();
+      for (const line of output.split('\n')) {
+        const m = line.trim().match(/^(\d+)\s+(\d{2})$/);
+        if (m) map.set(parseInt(m[2], 10), parseInt(m[1], 10));
+      }
+      return map;
+    };
+
+    const sentByHour = parseHourCounts(sentResult.stdout);
+    const recvByHour = parseHourCounts(recvResult.stdout);
+
+    const now = new Date();
+    const buckets: { label: string; sent: number; received: number }[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const h = new Date(now.getTime() - i * 3600000);
+      const hour = h.getHours();
+      buckets.push({
+        label: `${hour.toString().padStart(2, '0')}:00`,
+        sent: sentByHour.get(hour) ?? 0,
+        received: recvByHour.get(hour) ?? 0,
+      });
+    }
+    return buckets;
+  }
+
   private formatUptime(ms: number): string {
     const d = Math.floor(ms / 86400000);
     const h = Math.floor((ms % 86400000) / 3600000);

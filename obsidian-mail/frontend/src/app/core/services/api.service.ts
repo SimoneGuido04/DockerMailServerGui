@@ -9,7 +9,8 @@ import {
   Domain, ServerSetting, QueueMessage, ApiResponse,
   DnsRecord, AuthStatus, CertificateInfo, LetsEncryptStatus,
   DaneStatus, CertSummary, RspamdStats, ClamAvStatus,
-  Fail2BanStatus, SecurityTelemetry, LogSource, LogEntry, LogStats
+  Fail2BanStatus, SecurityTelemetry, LogSource, LogEntry, LogStats,
+  ThroughputPoint
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -27,6 +28,11 @@ export class ApiService {
 
   getQueue(): Observable<QueueMessage[]> {
     return this.http.get<ApiResponse<QueueMessage[]>>(`${this.base}/dashboard/queue`)
+      .pipe(map(r => r.data));
+  }
+
+  getThroughput(): Observable<ThroughputPoint[]> {
+    return this.http.get<ApiResponse<ThroughputPoint[]>>(`${this.base}/dashboard/throughput`)
       .pipe(map(r => r.data));
   }
 

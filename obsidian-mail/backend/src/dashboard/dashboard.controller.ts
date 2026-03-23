@@ -16,4 +16,9 @@ export class DashboardController {
   async getQueue() {
     return { data: await this.service.getQueue() };
   }
+
+  @Get('throughput')
+  async getThroughput() {
+    return { data: await this.service.getThroughput() };
+  }
 }

@@ -11,17 +11,17 @@ export class SecurityService {
     ]);
 
     const lines = result.stdout.split('\n');
-    const val = (key: string) => {
+    const val = (key: string): number | null => {
       const line = lines.find(l => l.toLowerCase().includes(key.toLowerCase()));
       const m = line?.match(/:\s*([\d.]+)/);
-      return m ? parseFloat(m[1]) : 0;
+      return m ? parseFloat(m[1]) : null;
     };
 
-    const totalScanned = val('messages scanned') || val('total messages');
-    const spamCount = val('messages treated as spam') || val('spam');
-    const hamCount = totalScanned - spamCount;
+    const totalScanned = val('messages scanned') ?? val('total messages') ?? 0;
+    const spamCount = val('messages treated as spam') ?? 0;
+    const hamCount = val('messages treated as ham') ?? Math.max(0, totalScanned - spamCount);
     const spamRatio = totalScanned > 0 ? spamCount / totalScanned : 0;
-    const avgScore = val('average learn');
+    const avgScore = val('average spam score') ?? 0;
 
     return {
       totalScanned,
