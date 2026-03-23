@@ -30,13 +30,29 @@ export class SettingsService {
 
   async list() {
     const info = await this.docker.getContainerInfo();
-    const envVars: Record<string, string> = {};
+    const envVars: Record<string, string> = { ...KNOWN_SETTINGS };
 
     if (info?.Config?.Env) {
       for (const e of info.Config.Env) {
         const [key, ...rest] = e.split('=');
-        envVars[key] = rest.join('=');
+        if (key in KNOWN_SETTINGS) {
+          envVars[key] = rest.join('=');
+        }
       }
+    }
+
+    try {
+      const content = await fs.readFile(ENV_FILE, 'utf8');
+      const lines = content.split('\n');
+      for (const line of lines) {
+        if (!line.trim() || line.startsWith('#')) continue;
+        const [key, ...rest] = line.split('=');
+        if (key && key.trim() in KNOWN_SETTINGS) {
+          envVars[key.trim()] = rest.join('=').trim();
+        }
+      }
+    } catch {
+      // Ignora se il file non esiste ancora
     }
 
     return Object.keys(KNOWN_SETTINGS).map(key => ({

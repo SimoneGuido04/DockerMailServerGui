@@ -74,6 +74,32 @@ Obsidian Mail relies on [Zitadel](https://zitadel.com/) for secure OIDC (OpenID 
    - Update `REQUIRED_GROUP` to match your Role Key (e.g., `admin`).
 
 ---
+## ⚙️ Connecting Settings to Docker Mailserver
+
+Obsidian Mail has a built-in Global Settings page that allows you to configure essential `docker-mailserver` environment variables from the web UI.
+
+To make the settings "real" and actually apply them to your mail server, you must share the same environment file between Obsidian Mail and `docker-mailserver`.
+
+1. **In Obsidian Mail's `docker-compose.yml`**:
+   The backend container saves changes to a shared docker volume called `mailserver-env` as a file named `mailserver.env`.
+   
+2. **In your `docker-mailserver`'s `docker-compose.yml`**:
+   Map the exact same volume and instruct docker-compose to load the generated `env_file`:
+
+   ```yaml
+   services:
+     mailserver:
+       image: mailserver/docker-mailserver:latest
+       # Tell the container to load variables from the GUI file:
+       env_file: /path/to/shared/data/mailserver.env
+       volumes:
+         # Share the volume from Obsidian Mail:
+         - obsidian-mail_mailserver-env:/path/to/shared/data
+   ```
+
+*(Note: While changes made in the web UI are saved instantly, `docker-mailserver` **requires a manual container restart** to apply new environment variables: `docker compose restart mailserver`)*
+
+---
 
 ## 🚀 Quick Start (Local Development)
 
