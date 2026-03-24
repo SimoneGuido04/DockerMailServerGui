@@ -97,41 +97,50 @@ export class DashboardService {
   }
 
   async getThroughput(): Promise<{ label: string; sent: number; received: number }[]> {
-    const [sentResult, recvResult] = await Promise.all([
-      this.docker.exec([
-        'sh', '-c',
-        "grep 'postfix/smtp\\[' /var/log/mail/mail.log 2>/dev/null | grep 'status=sent' | awk '{print substr($3,1,2)}' | sort | uniq -c || echo ''",
-      ]),
-      this.docker.exec([
-        'sh', '-c',
-        "grep -E 'postfix/(lmtp|virtual)\\[' /var/log/mail/mail.log 2>/dev/null | grep 'status=sent' | awk '{print substr($3,1,2)}' | sort | uniq -c || echo ''",
-      ]),
+    const result = await this.docker.exec([
+      'grep', '-E', 'postfix/(smtp|lmtp|virtual)\\[.*status=sent',
+      '/var/log/mail/mail.log',
     ]);
-
-    const parseHourCounts = (output: string): Map<number, number> => {
-      const map = new Map<number, number>();
-      for (const line of output.split('\n')) {
-        const m = line.trim().match(/^(\d+)\s+(\d{2})$/);
-        if (m) map.set(parseInt(m[2], 10), parseInt(m[1], 10));
-      }
-      return map;
-    };
-
-    const sentByHour = parseHourCounts(sentResult.stdout);
-    const recvByHour = parseHourCounts(recvResult.stdout);
+    console.log('[throughput] grep lines:', result.stdout.split('\n').filter(Boolean).length);
+    console.log('[throughput] first line sample:', result.stdout.split('\n')[0]);
 
     const now = new Date();
-    const buckets: { label: string; sent: number; received: number }[] = [];
+    const cutoff = new Date(now.getTime() - 12 * 3600 * 1000);
+
+    // Build 12 hour buckets keyed by UTC year-month-day-hour
+    const buckets: { label: string; sent: number; received: number; key: string }[] = [];
     for (let i = 11; i >= 0; i--) {
       const h = new Date(now.getTime() - i * 3600000);
-      const hour = h.getHours();
       buckets.push({
-        label: `${hour.toString().padStart(2, '0')}:00`,
-        sent: sentByHour.get(hour) ?? 0,
-        received: recvByHour.get(hour) ?? 0,
+        label: `${h.getUTCHours().toString().padStart(2, '0')}:00`,
+        sent: 0,
+        received: 0,
+        key: `${h.getUTCFullYear()}-${h.getUTCMonth()}-${h.getUTCDate()}-${h.getUTCHours()}`,
       });
     }
-    return buckets;
+
+    for (const line of result.stdout.split('\n').filter(Boolean)) {
+      // ISO 8601 format: "2026-03-24T14:54:19.123456+00:00 host service[pid]: ..."
+      const m = line.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):/);
+      if (!m) continue;
+
+      const logDate = new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:00:00Z`);
+      if (logDate < cutoff || logDate > now) continue;
+
+      const key = `${logDate.getUTCFullYear()}-${logDate.getUTCMonth()}-${logDate.getUTCDate()}-${logDate.getUTCHours()}`;
+      const bucket = buckets.find(b => b.key === key);
+      if (!bucket) continue;
+
+      if (/postfix\/smtp\[/.test(line)) {
+        bucket.sent++;
+      } else {
+        bucket.received++;
+      }
+    }
+
+    const out = buckets.map(({ label, sent, received }) => ({ label, sent, received }));
+    console.log('[throughput] result:', JSON.stringify(out));
+    return out;
   }
 
   private formatUptime(ms: number): string {
