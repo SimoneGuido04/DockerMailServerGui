@@ -46,13 +46,12 @@ export class LogsService {
 
   async searchLogs(q: string, source: string): Promise<LogEntry[]> {
     const safePath = this.safePath(source);
-    const result = await this.docker.exec([
-      'sh', '-c', `grep -iE "${q.replace(/"/g, '')}" "${safePath}" 2>/dev/null | tail -200`,
-    ]);
+    const result = await this.docker.exec(['grep', '-iE', q, safePath]);
 
     return result.stdout
       .split('\n')
       .filter(l => l.trim())
+      .slice(-200)
       .map(line => this.parseLine(line));
   }
 

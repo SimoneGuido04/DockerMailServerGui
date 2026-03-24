@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { DockerService } from '../docker/docker.service';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -62,6 +62,11 @@ export class SettingsService {
   }
 
   async update(key: string, value: string): Promise<void> {
+    if (!(key in KNOWN_SETTINGS)) {
+      throw new BadRequestException(`Unknown setting: ${key}`);
+    }
+    const sanitizedValue = value.replace(/[\r\n]/g, '');
+
     // Write to env file that docker-compose will use on next restart
     try {
       let content = '';
@@ -72,7 +77,7 @@ export class SettingsService {
       }
 
       const lines = content.split('\n').filter(l => !l.startsWith(`${key}=`) && l.trim() !== '');
-      lines.push(`${key}=${value}`);
+      lines.push(`${key}=${sanitizedValue}`);
 
       await fs.writeFile(ENV_FILE, lines.join('\n') + '\n', 'utf8');
     } catch (err) {
