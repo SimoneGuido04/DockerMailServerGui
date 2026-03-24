@@ -3,7 +3,7 @@
 </h1>
 
 <p align="center">
-  <strong>A modern, web-based management dashboard for a self-hosted Docker mail server stack.</strong>
+  <strong>A modern, web-based management dashboard for a self-hosted docker-mailserver.</strong>
 </p>
 
 <p align="center">
