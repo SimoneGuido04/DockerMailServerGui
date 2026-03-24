@@ -17,6 +17,19 @@
   Built with the dark "Sentinel Slate" design system, providing a fast, secure, and beautiful interface for administrators.
 </p>
 
+## About Obsidian Mail
+
+**Obsidian Mail** is a modern, web-based management dashboard for [docker-mailserver](https://github.com/docker-mailserver/docker-mailserver) – a fully-featured, self-hosted mail server running in Docker.
+
+Instead of managing your mail server through configuration files and SSH commands, Obsidian Mail provides an intuitive graphical interface to:
+- Manage mailboxes and domains
+- Configure mail server settings
+- Monitor server health and logs
+- Manage SSL/TLS certificates
+- Set up security rules and firewall policies
+
+**Perfect for administrators** who want professional mail server management without the command-line complexity.
+
 ---
 
 ## ✨ Features
