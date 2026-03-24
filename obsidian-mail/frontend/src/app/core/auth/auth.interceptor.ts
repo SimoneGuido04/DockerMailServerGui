@@ -10,15 +10,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
+  const idToken = oauthService.getIdToken();
   const accToken = oauthService.getAccessToken();
 
-  if (accToken) {
-    const authReq = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${accToken}`,
-      }
-    });
-    return next(authReq);
+  if (idToken) {
+    const headers: Record<string, string> = { Authorization: `Bearer ${idToken}` };
+    if (accToken) headers['X-Zitadel-Access-Token'] = accToken;
+    return next(req.clone({ setHeaders: headers }));
   }
 
   return next(req);

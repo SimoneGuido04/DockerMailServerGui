@@ -200,9 +200,10 @@ export class ApiService {
       });
 
       const headers: Record<string, string> = {
-        Authorization: `Bearer ${token.accessToken}`,
+        Authorization: `Bearer ${token.idToken}`,
         Accept: 'text/event-stream',
       };
+      if (token.accessToken) headers['X-Zitadel-Access-Token'] = token.accessToken;
 
       fetch(`${this.base}/logs/stream?${params}`, {
         headers,
@@ -240,8 +241,9 @@ export class ApiService {
     });
   }
 
-  private getAuthToken(): { accessToken: string } {
+  private getAuthToken(): { idToken: string; accessToken: string } {
     return {
+      idToken: this.oauthService.getIdToken() ?? '',
       accessToken: this.oauthService.getAccessToken() ?? '',
     };
   }

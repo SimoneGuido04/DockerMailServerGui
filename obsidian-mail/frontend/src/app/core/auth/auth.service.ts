@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { OAuthService } from 'angular-oauth2-oidc';
+import { OAuthService, OAuthSuccessEvent } from 'angular-oauth2-oidc';
+import { filter } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -26,7 +27,9 @@ export class AuthService {
       }
     };
 
-    this.oauthService.events.subscribe(() => {
+    this.oauthService.events.pipe(
+      filter(e => ['token_received', 'token_refreshed', 'token_expires', 'logout'].includes(e.type))
+    ).subscribe(() => {
       updateState();
     });
     await updateState();

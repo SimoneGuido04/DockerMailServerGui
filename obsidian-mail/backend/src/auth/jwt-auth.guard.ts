@@ -5,7 +5,7 @@ import { firstValueFrom, isObservable } from 'rxjs';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  private roleCache = new Map<string, { roles: any; expires: number }>();
+  private static roleCache = new Map<string, { roles: any; expires: number }>();
 
   constructor(private readonly config: ConfigService) {
     super();
@@ -30,7 +30,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (!roles) {
       const accessToken = request.headers['x-zitadel-access-token'];
       if (accessToken) {
-        const cached = this.roleCache.get(accessToken);
+        const cached = JwtAuthGuard.roleCache.get(accessToken);
         if (cached && cached.expires > Date.now()) {
           roles = cached.roles;
         } else {
@@ -45,7 +45,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
               roles = userInfo['urn:zitadel:iam:org:project:roles'] || userInfo.info?.['urn:zitadel:iam:org:project:roles'];
               if (roles) {
                 // Cache per 5 minuti per evitare rallentamenti nelle performance API
-                this.roleCache.set(accessToken, { roles, expires: Date.now() + 5 * 60 * 1000 });
+                JwtAuthGuard.roleCache.set(accessToken, { roles, expires: Date.now() + 5 * 60 * 1000 });
               }
             }
           } catch (err) {
