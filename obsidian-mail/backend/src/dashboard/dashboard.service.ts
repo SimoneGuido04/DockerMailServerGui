@@ -101,8 +101,6 @@ export class DashboardService {
       'grep', '-E', 'postfix/(smtp|lmtp|virtual)\\[.*status=sent',
       '/var/log/mail/mail.log',
     ]);
-    console.log('[throughput] grep lines:', result.stdout.split('\n').filter(Boolean).length);
-    console.log('[throughput] first line sample:', result.stdout.split('\n')[0]);
 
     const now = new Date();
     const cutoff = new Date(now.getTime() - 12 * 3600 * 1000);
@@ -138,9 +136,7 @@ export class DashboardService {
       }
     }
 
-    const out = buckets.map(({ label, sent, received }) => ({ label, sent, received }));
-    console.log('[throughput] result:', JSON.stringify(out));
-    return out;
+    return buckets.map(({ label, sent, received }) => ({ label, sent, received }));
   }
 
   private formatUptime(ms: number): string {
