@@ -63,7 +63,11 @@
         @if (throughputHasActivity()) {
           <div class="absolute inset-x-0 bottom-0 h-32 flex items-end px-2 gap-1">
             @for (point of throughput(); track point.label) {
+<<<<<<< Updated upstream
               <div class="flex-1 flex items-end gap-px h-full" [title]="point.label + ' — Sent: ' + point.sent + '  Recv: ' + point.received">
+=======
+              <div class="flex-1 h-full flex items-end gap-px" [title]="point.label + ' — Sent: ' + point.sent + '  Recv: ' + point.received">
+>>>>>>> Stashed changes
                 <div class="flex-1 rounded-t-sm bg-primary/30 hover:bg-primary/50 transition-colors"
                      [style.height.%]="normalizeHeight(point.sent)"></div>
                 <div class="flex-1 rounded-t-sm bg-secondary/30 hover:bg-secondary/50 transition-colors"

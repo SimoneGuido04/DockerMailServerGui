@@ -17,13 +17,23 @@
         <span class="material-symbols-outlined text-sm">refresh</span>
         Sync
       </button>
-      <button (click)="showCreateForm.set(true)"
-              class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg text-xs
-                     font-mono uppercase tracking-widest flex items-center gap-2
-                     hover:brightness-110 active:scale-95 transition-all">
-        <span class="material-symbols-outlined text-sm">add</span>
-        New Mailbox
-      </button>
+      @if (activeTab() === 'aliases') {
+        <button (click)="showCreateAliasForm.set(true)"
+                class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg text-xs
+                       font-mono uppercase tracking-widest flex items-center gap-2
+                       hover:brightness-110 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-sm">add</span>
+          New Alias
+        </button>
+      } @else {
+        <button (click)="showCreateForm.set(true)"
+                class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg text-xs
+                       font-mono uppercase tracking-widest flex items-center gap-2
+                       hover:brightness-110 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-sm">add</span>
+          New Mailbox
+        </button>
+      }
     </div>
   </header>
 
@@ -169,12 +179,12 @@
       <!-- Aliases list -->
       @if (activeTab() === 'aliases') {
         <div class="glass-card rounded-xl overflow-hidden">
-          <div class="px-6 py-4 border-b border-white/5">
+          <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
             <span class="text-xs font-mono text-on-surface-variant uppercase tracking-widest">
-              {{ aliases().length }} alias(es)
+              {{ filteredAliases().length }} alias(es)
             </span>
           </div>
-          @for (alias of aliases(); track alias.alias) {
+          @for (alias of filteredAliases(); track alias.alias + alias.destination) {
             <div class="group flex items-center justify-between px-6 py-4
                         hover:bg-white/5 transition-colors">
               <div class="flex items-center gap-4">
@@ -184,14 +194,15 @@
                   <div class="text-[10px] font-mono text-on-surface-variant">→ {{ alias.destination }}</div>
                 </div>
               </div>
-              <button (click)="deleteAlias(alias.alias)"
+              <button (click)="deleteAlias(alias.alias, alias.destination)"
                       class="p-1.5 rounded-lg text-tertiary hover:bg-tertiary/10 transition-colors
-                             opacity-0 group-hover:opacity-100">
+                             opacity-0 group-hover:opacity-100"
+                      title="Delete alias">
                 <span class="material-symbols-outlined text-sm">delete</span>
               </button>
             </div>
           }
-          @if (aliases().length === 0) {
+          @if (filteredAliases().length === 0) {
             <div class="px-6 py-10 text-center text-on-surface-variant text-xs font-mono">
               No aliases configured.
             </div>
@@ -273,6 +284,75 @@
               <span class="material-symbols-outlined animate-spin text-sm align-middle">autorenew</span>
             } @else {
               Create Mailbox
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Create Alias Modal ────────────────────────────────────────────── -->
+  @if (showCreateAliasForm()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center px-4"
+         (click)="cancelCreateAlias()">
+      <div class="absolute inset-0 bg-background/70 backdrop-blur-sm"></div>
+      <div class="glass-card rounded-2xl p-8 w-full max-w-md z-10 space-y-6"
+           (click)="$event.stopPropagation()">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-bold font-headline text-on-surface">New Alias</h2>
+          <button (click)="cancelCreateAlias()"
+                  class="p-1.5 rounded-lg hover:bg-white/5 text-on-surface-variant transition-colors">
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+
+        @if (createAliasError()) {
+          <div class="text-tertiary text-xs font-mono p-3 rounded-lg bg-tertiary/10">
+            {{ createAliasError() }}
+          </div>
+        }
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-[10px] font-mono uppercase tracking-widest text-on-surface-variant mb-2">
+              Alias Address
+            </label>
+            <input type="email" placeholder="alias@domain.com"
+                   [ngModel]="newAliasAddress()" (ngModelChange)="newAliasAddress.set($event)"
+                   class="w-full bg-surface-container-high border border-outline-variant/20 rounded-lg
+                          px-4 py-2.5 text-sm font-mono text-on-surface placeholder-on-surface-variant/40
+                          focus:outline-none focus:border-primary/50 transition-colors">
+          </div>
+          <div>
+            <label class="block text-[10px] font-mono uppercase tracking-widest text-on-surface-variant mb-2">
+              Destination Address
+            </label>
+            <input type="email" placeholder="user@domain.com"
+                   [ngModel]="newAliasDestination()" (ngModelChange)="newAliasDestination.set($event)"
+                   class="w-full bg-surface-container-high border border-outline-variant/20 rounded-lg
+                          px-4 py-2.5 text-sm font-mono text-on-surface placeholder-on-surface-variant/40
+                          focus:outline-none focus:border-primary/50 transition-colors">
+            <p class="mt-1.5 text-[10px] font-mono text-on-surface-variant/60">
+              To add multiple destinations, create one alias entry per recipient.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button (click)="cancelCreateAlias()"
+                  class="flex-1 py-3 rounded-xl border border-outline-variant/30 text-on-surface-variant
+                         text-sm font-mono hover:bg-white/5 transition-colors">
+            Cancel
+          </button>
+          <button (click)="createAlias()"
+                  [disabled]="creatingAlias() || !newAliasAddress() || !newAliasDestination()"
+                  class="flex-1 py-3 rounded-xl bg-primary-container text-on-primary-container
+                         font-bold text-sm hover:brightness-110 active:scale-95 transition-all
+                         disabled:opacity-50 disabled:cursor-not-allowed">
+            @if (creatingAlias()) {
+              <span class="material-symbols-outlined animate-spin text-sm align-middle">autorenew</span>
+            } @else {
+              Create Alias
             }
           </button>
         </div>

@@ -99,12 +99,14 @@ export class MailboxesService {
     return stdout
       .split('\n')
       .filter(l => l.includes('@'))
+      // Exclude alias lines: they contain '->' or '|' separators, or the word 'aliases'
+      .filter(l => !l.includes('->') && !l.includes('|'))
       .map(line => {
         // Find the actual email token (matches anything with an @ symbol)
         const parts = line.trim().split(/\s+/);
         const email = parts.find(p => p.includes('@')) || '';
         const [, domain] = email.split('@');
-        
+
         // Quota is usually the token after "( " in the new format or just parts[1]
         let quota: string | null = null;
         if (line.includes('(') && line.includes('/')) {
@@ -121,22 +123,34 @@ export class MailboxesService {
           isAdmin: false,
         };
       })
-      .filter(mb => mb.email);
+      .filter(mb => mb.email)
+      // Final guard: exclude entries that look like aliases (quota is an email or 'aliases')
+      .filter(mb => !mb.quota || (!mb.quota.includes('@') && mb.quota.toLowerCase() !== 'aliases'));
   }
 
   private parseAliasList(stdout: string) {
     return stdout
       .split('\n')
-      .filter(l => l.includes('->') || l.includes('|'))
+      .filter(l => l.includes('@'))
       .map(line => {
-        const [aliasPart, destination] = line.includes('->') ? line.split('->') : line.split('|');
-        // Remove leading '* ' and trim
-        const alias = aliasPart.replace(/^\*\s*/, '').trim();
-        return {
-          alias,
-          destination: destination.trim(),
-        };
+        // Normalise: strip leading '* ' then split by '->', '|', or whitespace
+        const normalized = line.replace(/^\*\s*/, '').trim();
+
+        if (normalized.includes('->')) {
+          const [a, d] = normalized.split('->');
+          return { alias: a.trim(), destination: d.trim() };
+        }
+        if (normalized.includes('|')) {
+          const [a, d] = normalized.split('|');
+          return { alias: a.trim(), destination: d.trim() };
+        }
+        // Space-separated format: "alias@domain dest@domain"
+        const parts = normalized.split(/\s+/);
+        if (parts.length >= 2 && parts[0].includes('@') && parts[1].includes('@')) {
+          return { alias: parts[0], destination: parts[1] };
+        }
+        return null;
       })
-      .filter(a => a.alias);
+      .filter((a): a is { alias: string; destination: string } => !!a && !!a.alias && !!a.destination);
   }
 }

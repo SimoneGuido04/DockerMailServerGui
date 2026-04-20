@@ -26,6 +26,13 @@ export class MailboxesComponent implements OnInit {
   readonly creating = signal(false);
   readonly createError = signal<string | null>(null);
 
+  // Create alias form
+  readonly showCreateAliasForm = signal(false);
+  readonly newAliasAddress = signal('');
+  readonly newAliasDestination = signal('');
+  readonly creatingAlias = signal(false);
+  readonly createAliasError = signal<string | null>(null);
+
   // Search
   readonly searchQuery = signal('');
 
@@ -33,6 +40,14 @@ export class MailboxesComponent implements OnInit {
     const q = this.searchQuery().toLowerCase();
     if (!q) return this.mailboxes();
     return this.mailboxes().filter(m => m.email.toLowerCase().includes(q));
+  });
+
+  readonly filteredAliases = computed(() => {
+    const q = this.searchQuery().toLowerCase();
+    if (!q) return this.aliases();
+    return this.aliases().filter(a =>
+      a.alias.toLowerCase().includes(q) || a.destination.toLowerCase().includes(q)
+    );
   });
 
   ngOnInit(): void {
@@ -74,13 +89,36 @@ export class MailboxesComponent implements OnInit {
     });
   }
 
+  createAlias(): void {
+    const alias = this.newAliasAddress().trim();
+    const destination = this.newAliasDestination().trim();
+    if (!alias || !destination) return;
+
+    this.creatingAlias.set(true);
+    this.createAliasError.set(null);
+
+    this.api.createAlias(alias, destination).subscribe({
+      next: () => {
+        this.creatingAlias.set(false);
+        this.showCreateAliasForm.set(false);
+        this.newAliasAddress.set('');
+        this.newAliasDestination.set('');
+        this.loadAll();
+      },
+      error: (err) => {
+        this.creatingAlias.set(false);
+        this.createAliasError.set(err.error?.message ?? err.message);
+      }
+    });
+  }
+
   deleteMailbox(email: string): void {
     if (!confirm(`Delete mailbox ${email}? This cannot be undone.`)) return;
     this.api.deleteMailbox(email).subscribe({ next: () => this.loadAll() });
   }
 
-  deleteAlias(alias: string): void {
-    if (!confirm(`Delete alias ${alias}?`)) return;
+  deleteAlias(alias: string, destination: string): void {
+    if (!confirm(`Delete alias ${alias} → ${destination}?`)) return;
     this.api.deleteAlias(alias).subscribe({ next: () => this.loadAll() });
   }
 
@@ -90,5 +128,12 @@ export class MailboxesComponent implements OnInit {
     this.newPassword.set('');
     this.newQuota.set('');
     this.createError.set(null);
+  }
+
+  cancelCreateAlias(): void {
+    this.showCreateAliasForm.set(false);
+    this.newAliasAddress.set('');
+    this.newAliasDestination.set('');
+    this.createAliasError.set(null);
   }
 }

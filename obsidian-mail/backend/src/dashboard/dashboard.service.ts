@@ -97,9 +97,26 @@ export class DashboardService {
   }
 
   async getThroughput(): Promise<{ label: string; sent: number; received: number }[]> {
+<<<<<<< Updated upstream
     const result = await this.docker.exec([
       'grep', '-E', 'postfix/(smtp|lmtp|virtual)\\[.*status=sent',
       '/var/log/mail/mail.log',
+=======
+    // Find the mail log regardless of path (/var/log/mail/mail.log or /var/log/mail.log)
+    const logFinder = "log=/var/log/mail/mail.log; [ -f \"$log\" ] || log=/var/log/mail.log; [ -f \"$log\" ] || log=$(ls /var/log/mail/*.log 2>/dev/null | head -1)";
+    // Extract hour robustly: works for both traditional (14:30:00) and ISO (T14:30:00) formats
+    const hourExtract = "grep -oE '[0-9]{2}:[0-9]{2}:[0-9]{2}' | cut -d: -f1 | sort | uniq -c";
+
+    const [sentResult, recvResult] = await Promise.all([
+      this.docker.exec([
+        'sh', '-c',
+        `${logFinder}; grep -h 'postfix/smtp\\[' "$log" 2>/dev/null | grep 'status=sent' | ${hourExtract} || echo ''`,
+      ]),
+      this.docker.exec([
+        'sh', '-c',
+        `${logFinder}; grep -hE 'postfix/(lmtp|virtual)\\[' "$log" 2>/dev/null | grep 'status=sent' | ${hourExtract} || echo ''`,
+      ]),
+>>>>>>> Stashed changes
     ]);
 
     const now = new Date();
